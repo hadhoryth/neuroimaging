@@ -4,7 +4,7 @@
 
 ## Results for current repopsitory state
 **(1) - Male**  
-**(2) - Female**
+**(2) - Female**  
 **AV45 images Processing results**
 
 |         |  Total | mean_Age(1) | Std_Age(1) | SSME(1) | mean_Age(2) |Std_Age(2) | SSME(2)|
