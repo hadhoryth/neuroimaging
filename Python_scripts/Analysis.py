@@ -1,5 +1,5 @@
 import numpy as np
-from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.model_selection import train_test_split, GridSearchCV, cross_val_score
 from sklearn.decomposition import PCA
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report, confusion_matrix
@@ -23,10 +23,11 @@ class Classifier:
         self.data, self.keys = [], []
         self.features_train, self.features_test, self.labels_train, self.labels_test = [], [], [], []
 
-    def generateTrainTestSet(self):
+    def generateTrainTestSet(self, size=0.25, random=42):
         features = np.concatenate([self.data['normal'], self.data['ad']])
         labels = np.concatenate([self.data['labels_normal'], self.data['labels_ad']])
-        self.features_train, self.features_test, self.labels_train, self.labels_test = train_test_split(features, labels, test_size=0.25, random_state=42)
+        self.features_train, self.features_test, self.labels_train, self.labels_test = train_test_split(features, labels, test_size=size, random_state=random)
+
         print('Train fraction: ', end="")
         print(Fore.GREEN + '{0}'.format(len(self.features_train)), end="")
         print('\nTest fraction: ', end="")
@@ -36,11 +37,12 @@ class Classifier:
 
     def pickClassifier(self):
         param_grid = {'C': [0.001, 0.01, 0.1, 1, 10],
-                      'gamma': [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.1]
+                      'gamma': [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.1, 0.2, 0.3]
                       }
         clf = GridSearchCV(SVC(kernel='rbf', class_weight='balanced',
                                decision_function_shape='ovr'), param_grid)
 
+        # clf = SVC(C=0.1, kernel='rbf', gamma='auto', class_weight='balanced', decision_function_shape='ovr')
         return clf
 
     def printClassifierResults(self, pred, target_names):
@@ -129,3 +131,6 @@ class Classifier:
             self.printClassifierResults(prediction, ['Normal', 'AD'])
 
         return score
+
+    def classifyWithKFold(self, clf):
+        return cross_val_score(clf, self.features_train, self.labels_train, cv=10, scoring='accuracy')
