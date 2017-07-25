@@ -1,4 +1,4 @@
-function files = preprocessImages(info, outFolder)
+function files = preprocessImages(info, outFolder, dx_data)
 global home config_defaults
 
 o_name = 'ADNI_mat';
@@ -137,13 +137,13 @@ toAnalize = struct('pet',[], 'fdg',[], 'mri',[]);
        
        % Extraction mean intensities from SURv image 
        brainRegions_pet = getRegionFromAtlas(config_defaults.r_atlas, nCerImage);
-       saveFeatures(nCerImage, 'brainRegions_pet', outputDir_PET);
+       saveFeatures(nCerImage, 'brainRegions_pet', outputDir_PET, 'dx_data');
        
        if(length(wr_files_norm.wfiles) > 1)
            if(isempty(wr_files_norm.wfiles{2}) == 0)
                nFDGImage = normFDG(wr_files_norm.wfiles{2}, 0.05);
                brainRegions_fdg = getRegionFromAtlas(config_defaults.r_atlas, nFDGImage);
-               saveFeatures(nFDGImage, 'brainRegions_fdg', outputDir_FDG);
+               saveFeatures(nFDGImage, 'brainRegions_fdg', outputDir_FDG, 'dx_data');
            end
        end
            
@@ -218,27 +218,10 @@ toAnalize = struct('pet',[], 'fdg',[], 'mri',[]);
         end
         
     end
-
-    function o_idx = pickValidDate(year, month, b, selector)
-        year = abs(year - b.year);
-        pos = find(year(:) < 1);
-        o_idx = pos;
-        if (length(pos) == 1)            
-            return;
-        end        
-        month = month - b.month(pos);
-        idx = find(month(:) < 0 & abs(month(:)) < 6);
-        if(isempty(idx) == 0)
-%             if(length(idx) > 1 && strcmp(selector,'all') == 0)
-%                idx = idx(selector); 
-%             end
-            o_idx = pos(idx);
-        end
-    end
-    
-    function saveFeatures(im_dir, var, out_dir)
+       
+    function saveFeatures(im_dir, var, out_dir, var1)
         [~, b] = fileparts(im_dir);        
-        save(mfullfile(out_dir, strcat(b, '.mat')),var);        
+        save(mfullfile(out_dir, strcat(b, '.mat')),var, var1);        
     end
 
     function isExist = isFileExist(path, label)

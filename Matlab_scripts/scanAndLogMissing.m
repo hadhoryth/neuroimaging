@@ -1,4 +1,4 @@
-function scanAndLogMissing(info)
+function scanAndLogMissing(info, csv_data)
 % info - struct with locations of rearanged folders
 % fiels: name - root folder name; path - location
 %        ad_name - folder for AD name; ad_path - location
@@ -29,21 +29,22 @@ fclose(fid);
         % mode : 1 - Normal
         %        2 - AD
         tree = dir(location);
-        tree = checkHiddenFolders({tree.name}, 1);
+        tree = checkHiddenFolders({tree.name}, 1);        
         full_tree = mfullfile(location, tree);        
         sub_trees = checkHiddenFolders(full_tree);
         
         for i = 1 : length(sub_trees)
+            dx_data= findDXData('', csv_data, full_tree{i});
             st = struct('pet', 'Missing', 'fdg', 'Missing', 'mri', 'Missing');
             if(length(sub_trees{i}) == 3)
                 st.pet = 'OK'; st.fdg = 'OK'; st.mri = 'OK'; 
                 printStatus(tree{i}, st.pet, st.fdg, st.mri);
-                startPreprocess(full_tree{i}, sub_trees{i}, mode, '');
+                startPreprocess(full_tree{i}, sub_trees{i}, mode, '', dx_data);
             else
                 parts = checkWhatMissing(sub_trees{i});
                 printStatus(tree{i}, st.pet, st.fdg, st.mri);
                 if(isempty(strfind([parts{:}], 'MRI')) == 1 && isempty(strfind([parts{:}], 'PET')) == 1)
-                    startPreprocess(full_tree{i}, sub_trees{i}, mode, parts);
+                    startPreprocess(full_tree{i}, sub_trees{i}, mode, parts, dx_data);
                 end
             end
             
@@ -80,7 +81,7 @@ fclose(fid);
         end
     end
 
-    function startPreprocess(path, subpath, mode, missing)
+    function startPreprocess(path, subpath, mode, missing, dx_data)
         fprintf('Preprocessing images: ......... ');
         f_locs = mfullfile(path, subpath);
                
@@ -93,7 +94,7 @@ fclose(fid);
         end
         
         f = struct('pet', f_locs{1},'fdg', fdg, 'mri', mri);
-        preprocessImages(f, mode);
+        preprocessImages(f, mode, dx_data);
         fprintf('OK\n');
     end
 

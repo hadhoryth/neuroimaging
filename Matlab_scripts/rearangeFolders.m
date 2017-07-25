@@ -1,4 +1,9 @@
-function tree = rearangeFolders(root_dir, out_dir)
+function tree = rearangeFolders(root_dir, out_dir, csv_data)
+% Use this function for non preproccessed images
+if(nargin > 2)
+   rearrange_mode = 1; 
+end
+
 root_content = checkHiddenFolders({root_dir});
 root_content = root_content{1};
 
@@ -12,23 +17,25 @@ if(exist(output.path, 'dir') == 0)
     cprintf('*comment', 'Ok\n');
 end
 
+output_dirs = {'normal', 'normal_meta', 'ad', 'ad_meta'};
+for i = 1 : length(output_dirs)
+   createOutputDirs(output_dirs{i}); 
+end
+
 % Main loop through root
+
 for i = 1 : length(root_content)
-    if(isempty(strfind(lower(root_content{i}), 'normal')) == 0)        
-        if(isempty(strfind(lower(root_content{i}), 'metadata')) == 0)
-            createOutputDirs('normal_meta');
-            handleFolderCoping(root_content{i}, 'normal_meta', output.normal_meta_path);
-        else
-           createOutputDirs('normal');
-           handleFolderCoping(root_content{i}, 'normal', output.normal_path);
+    if(isempty(strfind(lower(root_content{i}), 'normal')) == 0)
+        if(isempty(strfind(lower(root_content{i}), 'metadata')) == 0)            
+            handleFolderCoping(root_content{i}, output.normal_meta_path, 'normal_meta');
+        else            
+            handleFolderCoping(root_content{i}, output.normal_path, 'normal');
         end
-    elseif(isempty(strfind(lower(root_content{i}), 'ad')) == 0)        
-        if(isempty(strfind(lower(root_content{i}), 'metadata')) == 0)
-            createOutputDirs('ad_meta');
-            handleFolderCoping(root_content{i}, 'ad_meta', output.ad_meta_path);
-        else
-            createOutputDirs('ad');
-            handleFolderCoping(root_content{i}, 'ad', output.ad_path);
+    elseif(isempty(strfind(lower(root_content{i}), 'ad')) == 0)
+        if(isempty(strfind(lower(root_content{i}), 'metadata')) == 0)            
+            handleFolderCoping(root_content{i}, output.ad_meta_path, 'ad_meta');
+        else            
+            handleFolderCoping(root_content{i}, output.ad_path, 'ad');
         end
     end
     
@@ -36,7 +43,7 @@ end
 
 tree = output;
 
-    function handleFolderCoping(fld_path, mode, output_mode)
+    function handleFolderCoping(fld_path, output_mode, mode)
         % mode -> ad, normal
         % outputmode -> field of output struct        
         full_path = {mfullfile(root_dir, fld_path, '/ADNI')}; 
@@ -44,7 +51,13 @@ tree = output;
         subtree = subtree{1};
         for ii = 1 : length(subtree)
             f_path = mfullfile(full_path{1}, subtree{ii});
-            o_path = mfullfile(output_mode, subtree{ii});
+            if(rearrange_mode == 1)
+                var = findDXData(subtree{ii}, csv_data);
+                if(isstruct(var) == 1)
+                    output_mode = f_getPath(output, var.dx_change, mode);
+                end
+            end
+            o_path = mfullfile(output_mode, subtree{ii});            
             if(exist(o_path, 'dir') == 7)               
                 f_path = strcat(f_path, '/');
                 o_path = strcat(o_path, '/');            
@@ -181,5 +194,7 @@ tree = output;
             end
         end
     end
+
+    
 
 end
