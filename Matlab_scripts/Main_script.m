@@ -40,7 +40,7 @@ else
     if(mode == 1)
         load('info.mat');
     elseif (mode == 2)
-        load('info_sipba.mat');
+        load('info_sibpa.mat');
     end
 end
 
