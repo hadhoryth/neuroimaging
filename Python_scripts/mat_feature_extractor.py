@@ -22,8 +22,11 @@ def packFeatures(a, b, keys):
             keys[2]: labels_a, keys[3]: labels_b}
 
 
-def convertToDict(data):
+def convertToDict(data, fld):
     keys = ['id', 'age', 'gender', 'mmse', 'dx_change']
+    if not data['id']:
+        print(fld)
+        return None
     info = {}
     for i in range(len(keys)):
         info[keys[i]] = data[keys[i]][0][0]
@@ -55,7 +58,7 @@ def extract_features(files_dir):
             for file in files_path:
                 mat_contents = sio.loadmat(path.join(features_path, file))
                 brain_features = mat_contents[load_var][0]
-                dx_data = convertToDict(mat_contents['dx_data'][0])
+                dx_data = convertToDict(mat_contents['dx_data'][0], file)
 
                 if patient_type is 'Normal':
                     if img_type is 'FDG':

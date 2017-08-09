@@ -33,7 +33,7 @@ fclose(fid);
         full_tree = mfullfile(location, tree);        
         sub_trees = checkHiddenFolders(full_tree);
         
-        for i = 1 : length(sub_trees)
+        for i = 1 : length(sub_trees)            
             dx_data= findDXData('', csv_data, full_tree{i});
             st = struct('pet', 'Missing', 'fdg', 'Missing', 'mri', 'Missing');
             if(length(sub_trees{i}) == 3)

@@ -3,24 +3,24 @@
 * Downloaded [SPM](http://www.fil.ion.ucl.ac.uk/spm/ext/) toolbox
 
 ## Results for current repopsitory state
-**(1) - Male**  
-**(2) - Female**  
+**(1) - Male**
+**(2) - Female**
 **AV45 images Processing results**
 
-|         |  Total | mean_Age(1) | Std_Age(1) | SSME(1) | mean_Age(2) |Std_Age(2) | SSME(2)|
+|         |  Total | mean_Age(1) | Std_Age(1) | MMSE(1) | mean_Age(2) |Std_Age(2) | MMSE(2)|
 | :-----: | :-----:|:---: |:---:| :---:| :---:| :---:| :---:|
-| Normal  | 442    | 74.83|6.054| 20.01|72.85 | 5.70 | 22.12|
-| AD      | 156    | 76.28|7.73 | 18   |73.22 |7.61  | 18.28|
+| Normal  | 374    | 74.39|5.89| 28.73|72.26 | 5.68 | 28.96|
+| AD      | 224    | 76.50|7.38 | 23.22 |74.23 |6.9  | 22.3|
 
-**Mean accuracy for 10 folds: 0.90**
+Best **mean** accuracy for 10 folds: **0.892**
 
 --------
 
 **FDG images Processing results**
 
-|         |  Total | mean_Age(1) | Std_Age(1) | SSME(1) | mean_Age(2) |Std_Age(2) | SSME(2)|
+|         |  Total | mean_Age(1) | Std_Age(1) | MMSE(1) | mean_Age(2) |Std_Age(2) | MMSE(2)|
 | :-----: | :-----:|:---: |:---:| :---:| :---:| :---:| :---:|
-| Normal  | 310    | 74.78|6.054|  20.205|72.91 | 5.74 | 21.91|
-| AD      | 152    | 76.11|7.71| NaN   |73.25 |7.7257  | 18.093|
+| Normal  | 268    | 74.26|5.82|  28.71|72.39 | 5.71 | 28.98|
+| AD      | 194    | 76.45|7.51| 22.6   |74.039 |7.234  |  21.89|
 
-**Mean accuracy for 10 folds: 0.8854**
+Best **mean** accuracy for 10 folds: **0.84**

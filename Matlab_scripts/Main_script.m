@@ -1,15 +1,25 @@
-function Main_script(mode, needRearrange, needCSVRearrange)
-global home spm_defaults config_defaults
+function Main_script(mode, needRearrange, needCSVRearrange, doCleanData)
+global home home_out spm_defaults config_defaults cleanData
 
+% default Main_script(1, 0, 0);
 % mode - 1 -> local settings
 % mode - 2 -> sipba machine
+
+if (nargin > 3)
+    cleanData = doCleanData
+else
+    % by default remove unused and corrupted MRI images
+    cleanData = 1;
+end
 
 load('spm_defaults.mat');
 spm_defaults =  defaults;
 
 if (mode == 1)
     home = '/Users/XT/Documents/PhD/Granada/neuroimaging';
-    dataset_dir = mfullfile(home, 'dataset/');
+    % External HDD
+    dataset_dir = mfullfile('/Volumes/ELEMENT/Alzheimer');    
+%     dataset_dir = mfullfile(home, 'dataset/');
     config_defaults = struct('cerebellum', {mfullfile(home, 'Atlas', 'Cerebellum-MNIsegment.nii')},...
                          'atlas', {mfullfile(home, 'Atlas', 'atlas116.nii')});
 elseif (mode == 2)
@@ -19,11 +29,11 @@ elseif (mode == 2)
                          'atlas', {'/home/ivans/Alzheimer_data/Atlas/atlas116.nii'});
 end
 
-if(exist('labels_from_csv.mat', 'file') ~= 2)
-    xls_home = mfullfile(home,'csv_dataset/');
-    xls_files = strcat(xls_home, {'ADNIMERGE.xlsx', 'DXSUM_PDXCONV_ADNIALL.xlsx'});
-    mat_files = strcat(xls_home, {'data_ids.mat', 'data_bl_change.mat'});
-    dx_labels = csv_rearrange(xls_home, xls_files, mat_files);
+xls_home = mfullfile(home,'csv_dataset/');
+config_defaults.xls_files = strcat(xls_home, {'ADNIMERGE.xlsx', 'DXSUM_PDXCONV_ADNIALL.xlsx'});
+config_defaults.mat_files = strcat(xls_home, {'data_ids.mat', 'data_bl_change.mat'});
+if(exist('labels_from_csv.mat', 'file') ~= 2 && exist(config_defaults.mat_files{1}, 'file') ~= 2)    
+    dx_labels = csv_rearrange(xls_home, config_defaults.xls_files, config_defaults.mat_files);
     save('labels_from_csv.mat', 'dx_labels');
 else
     load('labels_from_csv.mat');
@@ -38,7 +48,7 @@ if (needRearrange == 1)
     end
 else
     if(mode == 1)
-        load('info.mat');
+        load('info_hdd'); %('info.mat');
     elseif (mode == 2)
         load('info_sibpa.mat');
     end
@@ -70,7 +80,7 @@ if(mode == 2)
     spm_defaults.segment.tissue = struct('tpm',tmp, 'ngaus',ngaus, 'native', native, 'warped',warped);
 end
 
-
+home_out = '/Volumes/ELEMENT/Alzheimer';% home_out = home;
 scanAndLogMissing(info, dx_labels);
 
 end

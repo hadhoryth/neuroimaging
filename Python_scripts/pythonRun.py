@@ -42,11 +42,14 @@ def run_kfold_split(data):
     classifier.data = data
     classifier.generateTrainTestSet(0, 0)
     clf = classifier.pickClassifier()
+    print(clf)
     scores = classifier.classifyWithKFold(clf)
     return scores
 
+
 if __name__ == '__main__':
     home = '/Users/XT/Documents/PhD/Granada/neuroimaging/ADNI_mat'
+    # home = '/Volumes/ELEMENT/Alzheimer/ADNI_mat'
     av45, av45_dx, fdg, fdg_dx = mat_feature_extractor.extract_features(home)
     # Save variable for debug purposes
     # import pickle
