@@ -4,7 +4,7 @@
 
 --------
 The analysis pipeline can be described as following:  
-**Rearranging folders** -> **Processing images -> Extracting features -> **Apply machine learning algorithms for **classification**.  
+**Rearranging folders** -> **Processing images** -> **Extracting features** -> Apply machine learning algorithms for **classification**.  
 See more details of implementation in the wiki.      
   
 In order to start analysis Main_script both for Matlab and Python has to be used.
