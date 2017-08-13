@@ -10,9 +10,9 @@ In order to start analysis `Main_script` both for Matlab and Python has to be us
 
 
 ## Results for current repopsitory state
-**(1) - Male**
-**(2) - Female**
-**AV45 images Processing results**
+**(1) - Male**  
+**(2) - Female**  
+**AV45 images Processing results**  
 
 |         |  Total | mean_Age(1) | Std_Age(1) | MMSE(1) | mean_Age(2) |Std_Age(2) | MMSE(2)|
 | :-----: | :-----:|:---: |:---:| :---:| :---:| :---:| :---:|
@@ -20,7 +20,7 @@ In order to start analysis `Main_script` both for Matlab and Python has to be us
 | MCI      | 87    | 75.2|7.16 | 27.59 |75.32 |5.2 | 27.48|
 | AD      | 237    | 75.46|7.45 | 21.23 |72.75 |7.65  | 21.09|
 
-Best **mean** accuracy for 10 folds: **0.86**
+Best **mean** accuracy for 10 folds: **0.862**
 
 --------
 
