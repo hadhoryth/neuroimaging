@@ -2,20 +2,21 @@ function files = preprocessImages(info, outFolder, dx_data)
 global home config_defaults home_out cleanData
 
 o_name = 'ADNI_mat';
-outputDir = mfullfile(home_out, o_name, outFolder);
-if(exist(outputDir, 'dir') == 0)
-    mkdir(outputDir);
+output_dir = mfullfile(home_out, o_name, outFolder);
+if(exist(output_dir, 'dir') == 0)
+    mkdir(output_dir);
 end
 
-outputDir_PET = mfullfile(outputDir, 'AV45');
-if(exist(outputDir_PET, 'dir') == 0)
-    mkdir(outputDir_PET);
+output_dir_pet = mfullfile(output_dir, 'AV45');
+if(exist(output_dir_pet, 'dir') == 0)
+    mkdir(output_dir_pet);
 end
 
-outputDir_FDG = mfullfile(outputDir, 'FDG');
-if(exist(outputDir_FDG, 'dir') == 0)
-    mkdir(outputDir_FDG);
+output_dir_fdg = mfullfile(output_dir, 'FDG');
+if(exist(output_dir_fdg, 'dir') == 0)
+    mkdir(output_dir_fdg);
 end
+
 
 template = strcat(home, '/', 'templates/T1.nii');
 
@@ -44,7 +45,7 @@ for j = 1 :length(petDate.year)
         [~, pet_i] = selectValidImage(mriDate.image(pet_mri));
         if(pet_i == 0), continue; end
         pet_mri = pet_mri(pet_i);
-    elseif (isempty(pet_mri) == 1)
+    elseif (isempty(pet_mri) == 1 || isempty(selectValidImage(mriDate.image(pet_mri))))
         continue;
     end
     
@@ -102,9 +103,9 @@ for j = 1 :length(petDate.year)
         w_files_norm = performNormalizationEW(mriDate.image{pet_mri}, mriDate.image{pet_mri});        
     end
     
-    [files_seg, r] = isPreprocessed(mriDate.image{pet_mri}{1}, mriDate.image{pet_mri}{1}, 'c1w', 'wfiles');
+    [~, r] = isPreprocessed(mriDate.image{pet_mri}{1}, mriDate.image{pet_mri}{1}, 'c1w', 'wfiles');
     if(r == 1)
-        files_seg = performSegmentation(w_files_norm.wfiles);
+        performSegmentation(w_files_norm.wfiles);
     end
     
     % Cerebellum processing
@@ -125,13 +126,13 @@ for j = 1 :length(petDate.year)
     
     % Extraction mean intensities from SURv image
     brainRegions_pet = getRegionFromAtlas(config_defaults.r_atlas, nCerImage);
-    saveFeatures(nCerImage, 'brainRegions_pet', outputDir_PET, 'dx_data');
+    saveFeatures(nCerImage, 'brainRegions_pet', output_dir_pet, 'dx_data');
     
     if(length(wr_files_norm.wfiles) > 1)
         if(isempty(wr_files_norm.wfiles{2}) == 0)
             nFDGImage = normFDG(wr_files_norm.wfiles{2}, 0.05);
             brainRegions_fdg = getRegionFromAtlas(config_defaults.r_atlas, nFDGImage);
-            saveFeatures(nFDGImage, 'brainRegions_fdg', outputDir_FDG, 'dx_data');
+            saveFeatures(nFDGImage, 'brainRegions_fdg', output_dir_fdg, 'dx_data');
         end
     end    
 end

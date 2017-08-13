@@ -2,6 +2,11 @@
 ## Requirements
 * Downloaded [SPM](http://www.fil.ion.ucl.ac.uk/spm/ext/) toolbox
 
+##Processing data
+In order to allow automatic rearranging the folders their internal structure has to be:
+**Name(consist Normal, LMCI, EMCI, AD)/ADNI/patients**.
+The first step of rearranging is to move all patients in the single output directory ( can be specified, by default: ADNI_Rearranged). The second step is by using ADNIMERGE data make final rearrangement.
+
 ## Results for current repopsitory state
 **(1) - Male**
 **(2) - Female**

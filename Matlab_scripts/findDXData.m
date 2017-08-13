@@ -2,7 +2,7 @@ function data = findDXData(ptid, dx_data, fullpath)
 % dx_data - cell array of structs
 % where struct has field: id 
 
-global config_defaults
+global data_ids
 
 
 if(nargin > 2)
@@ -26,26 +26,30 @@ k = 1;
     end
     
     
-    function getWithOutDX(ptid)
-        tmp = load (config_defaults.mat_files{1});
-        [ii, ~] = find(strcmp(tmp.data_ids.PTID, ptid) == 1);
+    function getWithOutDX(ptid)        
+        ii = find(strcmp(data_ids.PTID, ptid) == 1);
+        if(isempty(ii))
+            return;
+        end
         data.id = ptid;
-        data.age = mean(tmp.data_ids.AGE(ii));
+        data.age = mean(data_ids.AGE(ii));
         
-        mmse = cell2mat(tmp.data_ids.MMSE(ii));
+        mmse = cell2mat(data_ids.MMSE(ii));
         mmse(isnan(mmse)) = [];
         data.mmse = mean(mmse);
         
-        dx_change = tmp.data_ids.DX_bl(ii);
+        dx_change = data_ids.DX_bl(ii);
         data.dx_change = getNormDX(char(dx_change{1})); 
         
-        pt_gender = tmp.data_ids.PTGENDER(ii);
+        pt_gender = data_ids.PTGENDER(ii);
         data.gender = pt_gender{1};
     end
 
     function dx_norm = getNormDX(dx)
         dx_norm = 'Normal';
-        if(strcmpi(dx, 'mci') || strcmpi(dx, 'ad'))
+        if(strcmpi(dx, 'mci'))
+            dx_norm = 'MCI';
+        elseif(strcmpi(dx, 'ad'))
             dx_norm = 'AD';
         end        
     end

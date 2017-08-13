@@ -8,15 +8,6 @@ function [folders, sizes] = checkHiddenFolders(loc, ~)
     for ii = 1 : length(loc)           
        folder = dir(loc{ii});
        subfolders = {folder.name};
-%        k = 1;
-%        tmp = {};
-%        for jj = 1 : length(subfolders)
-%           if(strcmp(subfolders{jj}, '.') ~= 1 && strcmp(subfolders{jj}, '..') ~= 1 &&...
-%              strcmp(subfolders{jj}, '.DS_Store') ~= 1)
-%              tmp{k} = char(subfolders{jj});
-%              k = k + 1;
-%           end
-%        end
        tmp = removeHidden(subfolders);
        folders{ii} = tmp;
        sizes(ii,1) = length(tmp);

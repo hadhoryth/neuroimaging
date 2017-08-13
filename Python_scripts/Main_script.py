@@ -1,8 +1,10 @@
 import pickle
 import os.path
+import numpy as np
 import mat_feature_extractor
 from data_learn import Analysis
 from Helper import Helpers
+from sklearn.metrics import accuracy_score
 
 
 def getData(mat_home, useCache=True):
@@ -17,26 +19,30 @@ def getData(mat_home, useCache=True):
         return av45, av45_dx, fdg, fdg_dx
 
 
-def printStatistics(hlp, mode, data_1, data_2, scores):
+def printStatistics(hlp, mode, stat_data, scores):
     print('-----------------------------------------')
     print('{0} statistics'.format(mode))
-    hlp.printStatistics(data_1, data_2)
+    hlp.printStatistics(stat_data)
     print('Best mean score for 10 folds: {0}'.format(scores))
     print('-----------------------------------------')
 
 
 if __name__ == '__main__':
     mat_home = '/Users/XT/Documents/PhD/Granada/neuroimaging/ADNI_mat'
-    av45, av45_dx, fdg, fdg_dx = getData(mat_home)
-    keys = ['normal', 'ad', 'labels_normal', 'labels_ad']
+    hlp = Helpers()
+    keys = ['normal', 'mci', 'ad', 'labels_normal', 'labels_mci', 'labels_ad']
+    data_av45, data_fdg = hlp.extractFearutes(mat_home, keys)
 
     split = [0, 0]
-    hlp = Helpers()
-    analizer = Analysis()
+
+    analyzer = Analysis()
     print('AV45 processing')
-    scores = analizer.classify(av45, keys, 'svm', training_split=split)
-    printStatistics(hlp, 'AV45', av45_dx['normal'], av45_dx['ad'], scores)
+    # # scores, pred_data = analizer.classify(av45, keys, 'svm', training_split=split, clf_cache_name='av45')
+    scores = analyzer.classify(data_av45['av45'], keys, 'svm', training_split=split, clf_cache_name='av45')
+    printStatistics(hlp, 'AV45', [data_av45['dx']['normal'], data_av45['dx']['mci'], data_av45['dx']['ad']], scores)
+    # # r = accuracy_score(np.asarray(pred_data[0][0]), np.asarray(pred_data[1][0]))
 
     print('FDG processing')
-    scores = analizer.classify(fdg, keys, 'svm', training_split=split)
-    printStatistics(hlp, 'FDG', fdg_dx['normal'], fdg_dx['ad'], scores)
+    # scores, pred_data = analizer.classify(fdg, keys, 'svm', training_split=split, clf_cache_name='fdg')
+    scores = analyzer.classify(data_fdg['fdg'], keys, 'svm', training_split=split, clf_cache_name='fdg')
+    printStatistics(hlp, 'FDG', [data_fdg['dx']['normal'], data_fdg['dx']['mci'], data_fdg['dx']['ad']], scores)
