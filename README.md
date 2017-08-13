@@ -16,10 +16,11 @@ In order to start analysis `Main_script` both for Matlab and Python has to be us
 
 |         |  Total | mean_Age(1) | Std_Age(1) | MMSE(1) | mean_Age(2) |Std_Age(2) | MMSE(2)|
 | :-----: | :-----:|:---: |:---:| :---:| :---:| :---:| :---:|
-| Normal  | 374    | 74.39|5.89| 28.73|72.26 | 5.68 | 28.96|
-| AD      | 224    | 76.50|7.38 | 23.22 |74.23 |6.9  | 22.3|
+| Normal  | 408    | 74.13|6.08| 28.67|72.26 | 5.68 | 28.96|
+| MCI      | 87    | 75.2|7.16 | 27.59 |75.32 |5.2 | 27.48|
+| AD      | 237    | 75.46|7.45 | 21.23 |72.75 |7.65  | 21.09|
 
-Best **mean** accuracy for 10 folds: **0.892**
+Best **mean** accuracy for 10 folds: **0.86**
 
 --------
 
@@ -27,7 +28,8 @@ Best **mean** accuracy for 10 folds: **0.892**
 
 |         |  Total | mean_Age(1) | Std_Age(1) | MMSE(1) | mean_Age(2) |Std_Age(2) | MMSE(2)|
 | :-----: | :-----:|:---: |:---:| :---:| :---:| :---:| :---:|
-| Normal  | 268    | 74.26|5.82|  28.71|72.39 | 5.71 | 28.98|
-| AD      | 194    | 76.45|7.51| 22.6   |74.039 |7.234  |  21.89|
+| Normal  | 283    | 74.11|5.9|  28.7|72.04 | 6.05 | 29.02|
+| MCI      | 57    | 76.23|6.9 | 27.5 |75.24 |5.54  | 27.46|
+| AD      | 202    | 75.50|7.63| 21.04   |72.59 |7.66  |  21.06|
 
-Best **mean** accuracy for 10 folds: **0.84**
+Best **mean** accuracy for 10 folds: **0.815**

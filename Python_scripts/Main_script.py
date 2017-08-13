@@ -1,7 +1,6 @@
 import pickle
 import os.path
 import numpy as np
-import mat_feature_extractor
 from data_learn import Analysis
 from Helper import Helpers
 from sklearn.metrics import accuracy_score
