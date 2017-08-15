@@ -22,7 +22,7 @@ In order to start analysis `Main_script` both for Matlab and Python has to be us
 
 
 **Test dataset size**: 74
-![Confusion matrix](https://github.com/hadhoryth/neuroimaging/tree/master/Results/av45_confusion_matrix.png)
+![Confusion matrix](/Results/av45_confusion_matrix.png)
 
 Best **mean** accuracy for 10 folds: **0.862**
 
@@ -38,6 +38,6 @@ Best **mean** accuracy for 10 folds: **0.862**
 
 
 **Test dataset size**: 55
-![Confusion matrix](https://github.com/hadhoryth/neuroimaging/tree/master/Results/fdg_confusion_matrix.png)
+![Confusion matrix](/Results/fdg_confusion_matrix.png)
 
 Best **mean** accuracy for 10 folds: **0.815**
