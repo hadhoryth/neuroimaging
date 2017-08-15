@@ -1,49 +1,30 @@
 from matplotlib import pyplot as plt
+import itertools
 import numpy as np
 import pandas as pd
 from os import listdir, path
 import scipy.io as sio
+import pickle
+import os.path
 
 
 class Helpers:
-    def fancy_plot_confusion_matrix(cm, target_names, title='Confusion matrix',
-                                    cmap=plt.cm.Blues):
-        plt.imshow(cm, interpolation='nearest', cmap=cmap)
-        plt.title(title)
-        plt.colorbar()
-        tick_marks = np.arange(len(target_names))
-        plt.xticks(tick_marks, target_names, rotation=45)
-        plt.yticks(tick_marks, target_names)
-        plt.tight_layout()
-
-        width, height = cm.shape
-
-        for x in range(width):
-            for y in range(height):
-                plt.annotate(str(cm[x][y]), xy=(y, x),
-                             horizontalalignment='center',
-                             verticalalignment='center')
-        plt.ylabel('True label')
-        plt.xlabel('Predicted label')
-        plt.show()
-
-    def checkMMSE(self, mmse):
-        if np.isnan(mmse):
-            return 0
-        else:
+    def getStatistics(self, patients_data):
+        def checkMMSE(mmse):
+            if np.isnan(mmse):
+                return 0
             return mmse
 
-    def getStatistics(self, patients_data):
         # Gender : Male - 1, Female - 2
         male_age, male_mmse = [], []
         female_age, female_mmse = [], []
         for patient in patients_data:
             if patient['gender'] == 'Male':
                 male_age.append(patient['age'])
-                male_mmse.append(self.checkMMSE(patient['mmse']))
+                male_mmse.append(checkMMSE(patient['mmse']))
             else:
                 female_age.append(patient['age'])
-                female_mmse.append(self.checkMMSE(patient['mmse']))
+                female_mmse.append(checkMMSE(patient['mmse']))
 
         male_age, male_mmse = np.asarray(male_age), np.asarray(male_mmse)
         female_age, female_mmse = np.asarray(female_age), np.asarray(female_mmse)
@@ -161,3 +142,44 @@ class Helpers:
 
                     self.updateFeatures(fld, mod.lower(), features, dx_data)
         return self.packFeatures(keys)
+
+    def saveReadToLocal(self, mode, name, what, path, force=False):
+        filename = os.path.join(path, name + '.pickle')
+        if mode == 'write' and (not os.path.isfile(filename) and not force):
+            with open(filename, 'wb') as file_bytes:
+                pickle.dump(what, file_bytes)
+        elif mode == 'read':
+            with open(filename, 'rb') as file_bytes:
+                load = pickle.load(file_bytes)
+                return load
+
+    def cacheExist(self, name, path):
+        filename = os.path.join(path, name + '.pickle')
+        if os.path.isfile(filename):
+            return True
+        return False
+
+    def fancy_plot_confusion_matrix(self, cm, classes, title='Confusion matrix', cmap=plt.cm.Blues, normalize=False):
+        if normalize:
+            cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+            print("Normalized confusion matrix")
+        else:
+            print('Confusion matrix, without normalization')
+        print(cm)
+
+        plt.imshow(cm, interpolation='nearest', cmap=cmap)
+        plt.title(title)
+        plt.colorbar()
+
+        tick_marks = np.arange(len(classes))
+        plt.xticks(tick_marks, classes, rotation=45)
+        plt.yticks(tick_marks, classes)
+        fmt = '.2f' if normalize else 'd'
+        thresh = cm.max() / 2.
+        for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+            plt.text(j, i, format(cm[i, j], fmt), horizontalalignment="center",
+                color="white" if cm[i, j] > thresh else "black")
+        plt.tight_layout()
+        plt.ylabel('True label')
+        plt.xlabel('Predicted label')
+        plt.show()

@@ -6,6 +6,7 @@ from sklearn.model_selection import train_test_split, cross_val_score, GridSearc
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.externals import joblib
+from sklearn.metrics import confusion_matrix
 
 from colorama import init, Fore
 init(autoreset=True)
@@ -13,7 +14,7 @@ init(autoreset=True)
 
 class Analysis:
 
-    def getClassifier(self, type, k, data_train, label_train):
+    def getClassifier(self, type, k):
         if type.lower() == 'knn':
             print('Nearest Neighbor Classifier has been selected')
             clf = KNeighborsClassifier(n_neighbors=k, algorithm='kd_tree')
@@ -21,27 +22,24 @@ class Analysis:
             print('Support vector machine has been selected')
             tuned_param = {'C': [0.1, 10, 100], 'gamma': [0.001, 0.01, 0.1, 0.2], 'kernel': ['rbf'], 'class_weight': ['balanced']}
             clf = GridSearchCV(SVC(), tuned_param, cv=10)
-        clf.fit(data_train, label_train)
         return clf
 
-    def getTrainingSet(self, data, size, random):
-        step = len(self.keys) // 2
-        features, labels = data[self.keys[0]], data[self.keys[step]]
+    def getTrainingSet(self, data, size, random, keys):
+        step = len(keys) // 2
+        features, labels = data[keys[0]], data[keys[step]]
         for key in range(1, step):
-            features = np.concatenate((features, data[self.keys[key]]))
-            labels = np.concatenate((labels, data[self.keys[key + step]]))
+            features = np.concatenate((features, data[keys[key]]))
+            labels = np.concatenate((labels, data[keys[key + step]]))
 
         return train_test_split(features, labels, test_size=size, random_state=random)
 
     def print_data_split(self, train_size, test_size):
-        print('----------------------------------------------------')
         print('Train fraction: ', end="")
         print(Fore.GREEN + '{0}'.format(train_size), end="")
         print('\nTest fraction: ', end="")
         print(Fore.GREEN + '{0}'.format(test_size))
         print('Total data points: ', end="")
         print(Fore.GREEN + '{0}'.format(train_size + test_size))
-        print('----------------------------------------------------')
 
     def performPCA(self, data, n_pca):
         pca = PCA(n_components=n_pca).fit(data)
@@ -59,7 +57,10 @@ class Analysis:
     def classify(self, data, keys, classifier, k=2, training_split=[0.25, 42], apply_pca=False, n_pca=10, printing=True, scaling=False, useCache=True, clf_cache_name='clf'):
         self.keys = keys
 
-        features_train, features_test, labels_train, labels_test = self.getTrainingSet(data, training_split[0], training_split[1])
+        features_train, labels_train = data['train'], data['labels_train']
+        features_test, labels_test = data['test'], data['labels_test']
+        # features_train, features_test, labels_train, labels_test = self.getTrainingSet(data, training_split[0], training_split[1], self.keys)
+
         if printing:
             self.print_data_split(len(features_train), len(features_test))
 
@@ -73,6 +74,8 @@ class Analysis:
         # clf = self.readOrTrainClassifier(classifier, k, features_train, labels_train, useCache, clf_cache_name)
         # scores = cross_val_score(, features_train, labels_train, cv=10, scoring='accuracy')
 
-        clf = self.getClassifier(classifier, k, features_train, labels_train)
-        return clf.best_score_
+        clf = self.getClassifier(classifier, k)
+        clf.fit(features_train, labels_train)
+        pred = clf.predict(features_test)
+        return clf.best_score_, confusion_matrix(labels_test, pred)
         # return clf.score, [[labels_test], [clf.predict(features_test)]]
