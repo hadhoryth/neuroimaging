@@ -45,16 +45,21 @@ class Analysis:
         pca = PCA(n_components=n_pca).fit(data)
         return pca.transform(data)
 
-    def readOrTrainClassifier(self, classifier, k, features_train, labels_train, useCache, name):
-        cached_clf = name + '_classifier.pickle'
-        if useCache and os.path.isfile(cached_clf):
-            return joblib.load(cached_clf)
+    def readOrTrainClassifier(self, clf, name, features_train, labels_train):
+        cached_clf = os.path.join('_cache', name + '_classifier' + '.pickle')
+        if os.path.isfile(cached_clf):
+            print('Loading classifier from cached files ........ ', end='')
+            load = joblib.load(cached_clf)
+            print('OK')
+            return load
         else:
-            clf = self.getClassifier(classifier, k, features_train, labels_train)
-            save_clf = joblib.dump(clf.best_estimator_, cached_clf, compress=9)
+            print('Saving classifier from cached files ........ ', end='')
+            clf.fit(features_train, labels_train)
+            joblib.dump(clf, cached_clf, compress=9)
+            print('OK')
             return clf
 
-    def classify(self, data, keys, classifier, k=2, training_split=[0.25, 42], apply_pca=False, n_pca=10, printing=True, scaling=False, useCache=True, clf_cache_name='clf'):
+    def classify(self, data, keys, classifier, k=2, training_split=[0.25, 42], apply_pca=False, n_pca=10, printing=True, scaling=False, useCache=True, clf_cache_name='_clf'):
         self.keys = keys
 
         features_train, labels_train = data['train'], data['labels_train']
@@ -71,11 +76,8 @@ class Analysis:
         if apply_pca:
             features_train = self.performPCA(features_train, n_pca)
 
-        # clf = self.readOrTrainClassifier(classifier, k, features_train, labels_train, useCache, clf_cache_name)
-        # scores = cross_val_score(, features_train, labels_train, cv=10, scoring='accuracy')
+        clf = self.readOrTrainClassifier(self.getClassifier(classifier, k), clf_cache_name, features_train, labels_train)
 
-        clf = self.getClassifier(classifier, k)
-        clf.fit(features_train, labels_train)
         pred = clf.predict(features_test)
         return clf.best_score_, confusion_matrix(labels_test, pred)
         # return clf.score, [[labels_test], [clf.predict(features_test)]]

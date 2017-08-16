@@ -2,7 +2,7 @@
 ## Requirements
 * Downloaded [SPM](http://www.fil.ion.ucl.ac.uk/spm/ext/) toolbox
 
-##Processing data
+##Processing data  
 The analysis pipeline can be described as following:
 **Rearranging folders** -> **Processing images** -> **Extracting features** -> Apply machine learning algorithms for **classification**
 See more details of implementation in the wiki.
@@ -21,8 +21,13 @@ In order to start analysis `Main_script` both for Matlab and Python has to be us
 | AD      | 237    | 75.46|7.45 | 21.23 |72.75 |7.65  | 21.09|  
 
 
-**Test dataset size**: 74
-![Confusion matrix](/Results/av45_confusion_matrix.png)
+**Test dataset size**: 74  
+Confusion matrix
+|        | Normal| MCI   | AD   |
+| :----: | ----: | :---: |:---: |
+| Normal | 35 |  0  | 4     |
+| MCI    | 5  |  3  | 1     |
+| AD     | 2  |  0  | 24    |
 
 Best **mean** accuracy for 10 folds: **0.862**
 

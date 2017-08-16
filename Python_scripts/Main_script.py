@@ -59,11 +59,11 @@ if __name__ == '__main__':
     split = [0, 0]
 
     print('================== AV45 processing ======================')
-    scores, cm = analyzer.classify(data_av45['data'], keys, 'svm', training_split=split, clf_cache_name='av45')
+    scores, cm = analyzer.classify(data_av45['data'], keys, 'svm', training_split=split, clf_cache_name='_av45')
     printStatistics(hlp, 'AV45', [data_av45['info']['normal'], data_av45['info']['mci'], data_av45['info']['ad']], scores)
     hlp.fancy_plot_confusion_matrix(cm, ['Normal', 'MCI', 'AD'], title='AV45 confusion matrix')
 
     print('================== FDG processing ======================')
-    scores, cm = analyzer.classify(data_fdg['data'], keys, 'svm', training_split=split, clf_cache_name='fdg')
+    scores, cm = analyzer.classify(data_fdg['data'], keys, 'svm', training_split=split, clf_cache_name='_fdg')
     printStatistics(hlp, 'FDG', [data_fdg['info']['normal'], data_fdg['info']['mci'], data_fdg['info']['ad']], scores)
     hlp.fancy_plot_confusion_matrix(cm, ['Normal', 'MCI', 'AD'], title='FDG confusion matrix')
