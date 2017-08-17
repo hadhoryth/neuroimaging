@@ -23,11 +23,11 @@ In order to start analysis `Main_script` both for Matlab and Python has to be us
 
 **Test dataset size**: 74  
 Confusion matrix
-|        | Normal| MCI   | AD   |
-| :----: | ----: | :---: |:---: |
-| Normal | 35 |  0  | 4     |
-| MCI    | 5  |  3  | 1     |
-| AD     | 2  |  0  | 24    |
+|        | Normal | MCI  | AD  |
+| :----: | :----: | :---:|:---:|
+| Normal | 35     |  0   | 4   |
+| MCI    | 5      |  3   | 1   |
+| AD     | 2      |  0   | 24  |
 
 Best **mean** accuracy for 10 folds: **0.862**
 
