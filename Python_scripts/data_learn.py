@@ -37,9 +37,10 @@ class Analysis:
         print('Train fraction: ', end="")
         print(Fore.GREEN + '{0}'.format(train_size), end="")
         print('\nTest fraction: ', end="")
-        print(Fore.GREEN + '{0}'.format(test_size))
+        normal, mci, ad = test_size[test_size == 0], test_size[test_size == 1], test_size[test_size == 2]
+        print(Fore.GREEN + str(len(test_size)) + ' where: Normal: ' + str(len(normal)) + '; MCI: ' + str(len(mci)) + '; AD: ' + str(len(ad)))
         print('Total data points: ', end="")
-        print(Fore.GREEN + '{0}'.format(train_size + test_size))
+        print(Fore.GREEN + '{0}'.format(train_size + len(test_size)))
 
     def performPCA(self, data, n_pca):
         pca = PCA(n_components=n_pca).fit(data)
@@ -64,10 +65,9 @@ class Analysis:
 
         features_train, labels_train = data['train'], data['labels_train']
         features_test, labels_test = data['test'], data['labels_test']
-        # features_train, features_test, labels_train, labels_test = self.getTrainingSet(data, training_split[0], training_split[1], self.keys)
 
         if printing:
-            self.print_data_split(len(features_train), len(features_test))
+            self.print_data_split(len(features_train), labels_test)
 
         if scaling:
             scaler = StandardScaler().fit(features_train)
@@ -80,4 +80,3 @@ class Analysis:
 
         pred = clf.predict(features_test)
         return clf.best_score_, confusion_matrix(labels_test, pred)
-        # return clf.score, [[labels_test], [clf.predict(features_test)]]

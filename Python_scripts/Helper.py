@@ -159,12 +159,13 @@ class Helpers:
             return True
         return False
 
-    def fancy_plot_confusion_matrix(self, cm, classes, title='Confusion matrix', cmap=plt.cm.Blues, normalize=False):
-        if normalize:
-            cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
-            print("Normalized confusion matrix")
-        else:
-            print('Confusion matrix, without normalization')
+    def fancy_plot_confusion_matrix(self, cm, classes, title='Confusion matrix', cmap=plt.cm.Blues):
+
+        cm_norm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+        print("Normalized confusion matrix")
+        print(cm_norm)
+
+        print('Confusion matrix, without normalization')
         print(cm)
 
         plt.imshow(cm, interpolation='nearest', cmap=cmap)
@@ -174,7 +175,7 @@ class Helpers:
         tick_marks = np.arange(len(classes))
         plt.xticks(tick_marks, classes, rotation=45)
         plt.yticks(tick_marks, classes)
-        fmt = '.2f' if normalize else 'd'
+        fmt = '.2f'
         thresh = cm.max() / 2.
         for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
             plt.text(j, i, format(cm[i, j], fmt), horizontalalignment="center",
