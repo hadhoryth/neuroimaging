@@ -38,8 +38,8 @@ def getFeatures(mode, keys, normilize=False, analyzer=Analysis(), hlp=Helpers())
         data_av45, data_fdg = hlp.extractFearutes(mat_home, keys)
         if normilize:
             f = Features()
-            data_av45['av45'] = f.normalizeFeatures(data_av45['av45'])
-            data_fdg['fdg'] = f.normalizeFeatures(data_fdg['fdg'])
+            data_av45['av45'] = f.normalizeFeatures(data_av45['av45'], True)
+            data_fdg['fdg'] = f.normalizeFeatures(data_fdg['fdg'], True)
 
         def updateCache(data, info, name):
             train, test, labels_train, labels_test = analyzer.getTrainingSet(data, 0.1, 30, keys)
@@ -76,7 +76,7 @@ if __name__ == '__main__':
     data_av45, data_fdg = getFeatures('read', keys, normilize=True)
 
     av45_dx = [data_av45['info']['normal'], data_av45['info']['mci'], data_av45['info']['ad']]
-    runAnalysis(data_av45['data'], av45_dx, keys, img_type='AV45')
+    runAnalysis(data_av45['data'], av45_dx, keys, clf_type='svm', img_type='AV45')
 
     fdg_dx = [data_fdg['info']['normal'], data_fdg['info']['mci'], data_fdg['info']['ad']]
     runAnalysis(data_fdg['data'], fdg_dx, keys, img_type='FDG')

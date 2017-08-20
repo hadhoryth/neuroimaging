@@ -2,7 +2,7 @@ import numpy as np
 from Helper import Helpers
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
 import os.path
 
 
@@ -42,9 +42,8 @@ class Features():
         return brain_regions
 
     def _removeOutlayers(self, upd_data):
-        # scaler = StandardScaler()
-        # upd_data = scaler.fit_transform(upd_data.reshape(-1, 1))
-        upd_data = upd_data.reshape(-1, 1)
+        scaler = MinMaxScaler()
+        upd_data = scaler.fit_transform(upd_data.reshape(-1, 1))
 
         def replaceOutlayers(values, idx, std, max, min):
             for i in idx:
@@ -70,9 +69,9 @@ class Features():
         """ data - dictionary """
         for value in data.values():
             if not 'out_data' in locals():
-                out_data = [[None]] * len(value)
+                out_data = [None] * len(value)
             for i in range(len(value)):
-                if out_data[i][0] is None:
+                if out_data[i] is None:
                     out_data[i] = np.array(value[i])
                 else:
                     out_data[i] = np.append(out_data[i], value[i])

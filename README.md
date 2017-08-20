@@ -18,9 +18,9 @@ In order to start analysis `Main_script` both for Matlab and Python has to be us
     
 |Confusion Matrix|Normilized CM|
 |:----:|:----:|
-|<table><tr><th><br></th><th>Normal</th><th>MCI</th><th>AD</th></tr><tr><td>Normal</td><td>35</td><td>0</td><td>4</td></tr><tr><td>MCI</td><td>5</td><td>3</td><td>1</td></tr><tr><td>AD</td><td>2</td><td>0</td><td>24</td></tr></table>|<table><tr><th><br></th><th>Normal</th><th>MCI</th><th>AD</th></tr><tr><td>Normal</td><td>0.9</td><td>0</td><td>0.1</td></tr><tr><td>MCI</td><td>0.5</td><td>0.33</td><td>0.11</td></tr><tr><td>AD</td><td>0.08</td><td>0</td><td>0.92</td></tr></table>|
+|<table><tr><th></th><th>Normal</th><th>MCI</th><th>AD</th></tr><tr><td>Normal</td><td>37</td><td>2</td><td>0</td></tr><tr><td>MCI</td><td>0</td><td>8</td><td>1</td></tr><tr><td>AD</td><td>1</td><td>2</td><td>23</td></tr></table>|<table><tr><th></th><th>Normal</th><th>MCI</th><th>AD</th></tr><tr><td>Normal</td><td>0.95</td><td>0.05</td><td>0</td></tr><tr><td>MCI</td><td>0</td><td>0.88</td><td>0.11</td></tr><tr><td>AD</td><td>0.039</td><td>0.08</td><td>0.88</td></tr></table>|
 
-Best **mean** accuracy for 10 folds: **0.862**
+Best **mean** accuracy for 10 folds: **0.93**
 
 --------
 
@@ -33,6 +33,6 @@ Best **mean** accuracy for 10 folds: **0.862**
     
 |Confusion Matrix|Normilized CM|
 |:----:|:----:|
-|<table><tr><th><br></th><th>Normal</th><th>MCI</th><th>AD</th></tr><tr><td>Normal</td><td>29</td><td>1</td><td>4</td></tr><tr><td>MCI</td><td>3</td><td>3</td><td>1</td></tr><tr><td>AD</td><td>4</td><td>0</td><td>10</td></tr></table>|<table><tr><th><br></th><th>Normal</th><th>MCI</th><th>AD</th></tr><tr><td>Normal</td><td>0.85</td><td>0.03</td><td>0.12</td></tr><tr><td>MCI</td><td>0.43</td><td>0.43</td><td>0.14</td></tr><tr><td>AD</td><td>0.28</td><td>0</td><td>0.71</td></tr></table>|
+|<table><tr><th></th><th>Normal</th><th>MCI</th><th>AD</th></tr><tr><td>Normal</td><td>34</td><td>0</td><td>0</td></tr><tr><td>MCI</td><td>0</td><td>7</td><td>0</td></tr><tr><td>AD</td><td>0</td><td>0</td><td>14</td></tr></table>|<table><tr><th></th><th>Normal</th><th>MCI</th><th>AD</th></tr><tr><td>Normal</td><td>1</td><td>0</td><td>0</td></tr><tr><td>MCI</td><td>0</td><td>1</td><td>0</td></tr><tr><td>AD</td><td>0</td><td>0</td><td>1</td></tr></table>|
 
-Best **mean** accuracy for 10 folds: **0.815**
+Best **mean** accuracy for 10 folds: **0.99**

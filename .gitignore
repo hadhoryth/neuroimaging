@@ -6,3 +6,5 @@ dataset
 /ADNI_mat
 /Python_scripts/.vscode
 /Python_scripts/test_script.py
+.pyc
+/Python_scripts/_features
