@@ -42,7 +42,8 @@ class Helpers:
             statistics = np.vstack([statistics, self.getStatistics(data_dx[i])])
 
         types = ['Normal', 'MCI', 'AD']
-        params = ['Total', 'Av_Male', 'Av_Female', 'Std Male', 'Std Female', 'AV_Male MMSE', 'AV_Female MMSE']
+        params = ['Total', 'Av_Male', 'Av_Female', 'Std Male',
+                  'Std Female', 'AV_Male MMSE', 'AV_Female MMSE']
         results = pd.DataFrame(statistics, types, params)
         print(results)
 
@@ -87,9 +88,11 @@ class Helpers:
         patient, modality = patient.lower(), modality.lower()
         if patient == 'normal':
             if modality == 'fdg':
-                updateVaribale(self.features_Normal_FDG, features, self.features_Normal_FDG_DX, dx_data)
+                updateVaribale(self.features_Normal_FDG, features,
+                               self.features_Normal_FDG_DX, dx_data)
             else:
-                updateVaribale(self.features_Normal_AV45, features, self.features_Normal_AV45_DX, dx_data)
+                updateVaribale(self.features_Normal_AV45, features,
+                               self.features_Normal_AV45_DX, dx_data)
         elif patient == 'mci':
             if modality == 'fdg':
                 updateVaribale(self.features_MCI_FDG, features, self.features_MCI_FDG_DX, dx_data)
@@ -117,7 +120,8 @@ class Helpers:
             return out_dict
 
         av45 = [self.features_Normal_AV45, self.features_MCI_AV45, self.features_AD_AV45]
-        av45_dx = [self.features_Normal_AV45_DX, self.features_MCI_AV45_DX, self.features_AD_AV45_DX]
+        av45_dx = [self.features_Normal_AV45_DX,
+                   self.features_MCI_AV45_DX, self.features_AD_AV45_DX]
 
         fdg = [self.features_Normal_FDG, self.features_MCI_FDG, self.features_AD_FDG]
         fdg_dx = [self.features_Normal_FDG_DX, self.features_MCI_FDG_DX, self.features_AD_FDG_DX]
@@ -159,7 +163,7 @@ class Helpers:
             return True
         return False
 
-    def fancy_plot_confusion_matrix(self, cm, classes, title='Confusion matrix', cmap=plt.cm.Blues):
+    def fancy_plot_confusion_matrix(self, cm, classes, title='Confusion matrix', cmap=plt.cm.Blues, plot=False):
 
         cm_norm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
         print("Normalized confusion matrix")
@@ -168,19 +172,20 @@ class Helpers:
         print('Confusion matrix, without normalization')
         print(cm)
 
-        plt.imshow(cm, interpolation='nearest', cmap=cmap)
-        plt.title(title)
-        plt.colorbar()
+        if plot:
+            plt.imshow(cm, interpolation='nearest', cmap=cmap)
+            plt.title(title)
+            plt.colorbar()
 
-        tick_marks = np.arange(len(classes))
-        plt.xticks(tick_marks, classes, rotation=45)
-        plt.yticks(tick_marks, classes)
-        fmt = '.2f'
-        thresh = cm.max() / 2.
-        for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
-            plt.text(j, i, format(cm[i, j], fmt), horizontalalignment="center",
-                color="white" if cm[i, j] > thresh else "black")
-        plt.tight_layout()
-        plt.ylabel('True label')
-        plt.xlabel('Predicted label')
-        plt.show()
+            tick_marks = np.arange(len(classes))
+            plt.xticks(tick_marks, classes, rotation=45)
+            plt.yticks(tick_marks, classes)
+            fmt = '.2f'
+            thresh = cm.max() / 2.
+            for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+                plt.text(j, i, format(cm[i, j], fmt), horizontalalignment="center",
+                         color="white" if cm[i, j] > thresh else "black")
+            plt.tight_layout()
+            plt.ylabel('True label')
+            plt.xlabel('Predicted label')
+            plt.show()

@@ -22,7 +22,8 @@ class Analysis:
         elif type.lower() == 'svm':
             print('Support vector machine has been selected')
             tuned_param = {'C': [0.1, 10, 10, 100], 'gamma': [0.001, 0.01, 0.1, 0.2]}
-            clf = GridSearchCV(SVC(kernel='rbf', decision_function_shape='ovr', random_state=0, class_weight='balanced'), tuned_param, cv=10)
+            clf = GridSearchCV(SVC(kernel='rbf', decision_function_shape='ovr',
+                                   random_state=0), tuned_param, cv=10)
         elif type.lower() == 'lin_svm':
             print('Linear Support Vector machine has been selected')
             clf = OneVsRestClassifier(LinearSVC(random_state=0, C=10))
@@ -34,15 +35,20 @@ class Analysis:
         for key in range(1, step):
             features = np.concatenate((features, data[keys[key]]))
             labels = np.concatenate((labels, data[keys[key + step]]))
-
+        idx = self.checkDataset(features, features)
+        print('\nRemoving repeated features: {0}'.format(labels[idx]))
+        features = np.delete(features, (idx), axis=0)
+        labels = np.delete(labels, (idx), axis=0)
         return train_test_split(features, labels, test_size=size, random_state=random)
 
     def print_data_split(self, train_size, test_size):
         print('Train fraction: ', end="")
         print(Fore.GREEN + '{0}'.format(train_size), end="")
         print('\nTest fraction: ', end="")
-        normal, mci, ad = test_size[test_size == 0], test_size[test_size == 1], test_size[test_size == 2]
-        print(Fore.GREEN + str(len(test_size)) + ' where: Normal: ' + str(len(normal)) + '; MCI: ' + str(len(mci)) + '; AD: ' + str(len(ad)))
+        normal, mci, ad = test_size[test_size ==
+                                    0], test_size[test_size == 1], test_size[test_size == 2]
+        print(Fore.GREEN + str(len(test_size)) + ' where: Normal: ' +
+              str(len(normal)) + '; MCI: ' + str(len(mci)) + '; AD: ' + str(len(ad)))
         print('Total data points: ', end="")
         print(Fore.GREEN + '{0}'.format(train_size + len(test_size)))
 
@@ -71,11 +77,21 @@ class Analysis:
         for i in range(n_classes):
             fpr[i], tpr[i], _ = roc_curve(labels_test, pred_labels[:, i])
 
+    def checkDataset(self, data_a, data_b):
+        matched_elements = np.asarray([], dtype=int)
+        for i in range(len(data_a)):
+            for j in range(len(data_b)):
+                if i != j and np.array_equal(data_a[i], data_b[j]):
+                    matched_elements = np.append(matched_elements, i)
+                    break
+        return matched_elements
+
     def classify(self, data, keys, classifier, k=2, training_split=[0.25, 42], apply_pca=False, n_pca=10, printing=True, scaling=False, useCache=True, clf_cache_name='_clf'):
         self.keys = keys
 
         features_train, labels_train = data['train'], data['labels_train']
         features_test, labels_test = data['test'], data['labels_test']
+        print(labels_test)
 
         if printing:
             self.print_data_split(len(features_train), labels_test)
@@ -87,7 +103,8 @@ class Analysis:
         if apply_pca:
             features_train = self.performPCA(features_train, n_pca)
 
-        clf = self.readOrTrainClassifier(self.getClassifier(classifier, k), clf_cache_name, features_train, labels_train, force=True)
+        clf = self.readOrTrainClassifier(self.getClassifier(
+            classifier, k), clf_cache_name, features_train, labels_train, force=True)
 
         pred = clf.predict(features_test)
 

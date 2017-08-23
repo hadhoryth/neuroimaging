@@ -42,6 +42,7 @@ class Features():
         return brain_regions
 
     def _removeOutlayers(self, upd_data):
+        # TODO check if it works without removal
         scaler = MinMaxScaler()
         upd_data = scaler.fit_transform(upd_data.reshape(-1, 1))
 
@@ -61,8 +62,8 @@ class Features():
 
         upd_data = replaceOutlayers(upd_data, outlayers, std / 3, clean_max, clean_min)
         std = np.std(upd_data)
-        if std < 0.1:
-            return None
+        # if std < 0.1:
+        #     return None
         return upd_data
 
     def _inverseRepackFeatures(self, data):
@@ -86,6 +87,8 @@ class Features():
                 ax.set_ylabel(ylabel)
             mean, std = np.mean(data), np.std(data)
             sns.distplot(data, color=clr, ax=ax)
+            if mean < 2:
+                ax.set_xlim((-0.4, 2))
             ax.plot((mean - 3 * std, mean - 3 * std), (0, 3))
             ax.plot((mean + 3 * std, mean + 3 * std), (0, 3))
             ax.plot((mean, mean), (0, 3))
@@ -104,6 +107,7 @@ class Features():
                 k += 1
 
         plt.savefig(os.path.join('_features', str(count) + '_' + title))
+        plt.cla()
         plt.close()
         # plt.show()
 

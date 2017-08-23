@@ -38,11 +38,11 @@ def getFeatures(mode, keys, normilize=False, analyzer=Analysis(), hlp=Helpers())
         data_av45, data_fdg = hlp.extractFearutes(mat_home, keys)
         if normilize:
             f = Features()
-            data_av45['av45'] = f.normalizeFeatures(data_av45['av45'], True)
-            data_fdg['fdg'] = f.normalizeFeatures(data_fdg['fdg'], True)
+            data_av45['av45'] = f.normalizeFeatures(data_av45['av45'], False)
+            data_fdg['fdg'] = f.normalizeFeatures(data_fdg['fdg'], False)
 
         def updateCache(data, info, name):
-            train, test, labels_train, labels_test = analyzer.getTrainingSet(data, 0.1, 30, keys)
+            train, test, labels_train, labels_test = analyzer.getTrainingSet(data, 0.1, 0, keys)
             out_dict = {'data': {'train': train, 'test': test,
                                  'labels_train': labels_train, 'labels_test': labels_test}, 'info': info}
             hlp.saveReadToLocal(mode, name, out_dict, cache_path)
