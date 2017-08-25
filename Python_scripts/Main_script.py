@@ -36,13 +36,13 @@ def getFeatures(mode, keys, normilize=False, analyzer=Analysis(), hlp=Helpers())
         print('Extracting features.....-> ', end='')
         mode = 'write'
         data_av45, data_fdg = hlp.extractFearutes(mat_home, keys)
-        if normilize:
-            f = Features()
-            data_av45['av45'] = f.normalizeFeatures(data_av45['av45'], False)
-            data_fdg['fdg'] = f.normalizeFeatures(data_fdg['fdg'], False)
 
         def updateCache(data, info, name):
             train, test, labels_train, labels_test = analyzer.getTrainingSet(data, 0.1, 0, keys)
+            if normilize:
+                f = Features()
+                train = f.normalizeFeatures(train, False)
+
             out_dict = {'data': {'train': train, 'test': test,
                                  'labels_train': labels_train, 'labels_test': labels_test}, 'info': info}
             hlp.saveReadToLocal(mode, name, out_dict, cache_path)
@@ -79,4 +79,4 @@ if __name__ == '__main__':
     runAnalysis(data_av45['data'], av45_dx, keys, clf_type='svm', img_type='AV45')
 
     fdg_dx = [data_fdg['info']['normal'], data_fdg['info']['mci'], data_fdg['info']['ad']]
-    runAnalysis(data_fdg['data'], fdg_dx, keys, img_type='FDG')
+    runAnalysis(data_fdg['data'], fdg_dx, keys, img_type='FDG', clf_type='svm')

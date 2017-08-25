@@ -2,11 +2,12 @@ import os.path
 import numpy as np
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC, LinearSVC
+from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split, cross_val_score, GridSearchCV
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.externals import joblib
-from sklearn.metrics import confusion_matrix, roc_curve, auc
+from sklearn.metrics import confusion_matrix, roc_curve, auc, make_scorer, f1_score
 from sklearn.multiclass import OneVsRestClassifier
 
 from colorama import init, Fore
@@ -15,7 +16,7 @@ init(autoreset=True)
 
 class Analysis:
 
-    def getClassifier(self, type, k):
+    def getClassifier(self, type, k=3):
         if type.lower() == 'knn':
             print('Nearest Neighbor Classifier has been selected')
             clf = KNeighborsClassifier(n_neighbors=k, algorithm='kd_tree')
@@ -23,13 +24,18 @@ class Analysis:
             print('Support vector machine has been selected')
             tuned_param = {'C': [0.1, 10, 10, 100], 'gamma': [0.001, 0.01, 0.1, 0.2]}
             clf = GridSearchCV(SVC(kernel='rbf', decision_function_shape='ovr',
-                                   random_state=0), tuned_param, cv=10)
+                                   random_state=0), tuned_param, cv=5)
         elif type.lower() == 'lin_svm':
             print('Linear Support Vector machine has been selected')
-            clf = OneVsRestClassifier(LinearSVC(random_state=0, C=10))
+            clf = OneVsRestClassifier(LinearSVC(random_state=0, C=5))
+        elif type.lower() == 'lgr':
+            print('Logistic regression has been selected')
+            tuned_param = {'C': [0.01, 0.1, 10, 10, 100], 'solver': ['newton-cg', 'lbfgs']}
+            f1_scorer = make_scorer(f1_score, pos_label='0')
+            clf = GridSearchCV(LogisticRegression(), param_grid=tuned_param, cv=5)
         return clf
 
-    def getTrainingSet(self, data, size, random, keys):
+    def getTrainingSet(self, data, size, random, keys, do_split=True):
         step = len(keys) // 2
         features, labels = data[keys[0]], data[keys[step]]
         for key in range(1, step):
@@ -39,7 +45,9 @@ class Analysis:
         print('\nRemoving repeated features: {0}'.format(labels[idx]))
         features = np.delete(features, (idx), axis=0)
         labels = np.delete(labels, (idx), axis=0)
-        return train_test_split(features, labels, test_size=size, random_state=random)
+        if do_split:
+            return train_test_split(features, labels, test_size=size, random_state=random)
+        return features, labels
 
     def print_data_split(self, train_size, test_size):
         print('Train fraction: ', end="")
@@ -91,7 +99,6 @@ class Analysis:
 
         features_train, labels_train = data['train'], data['labels_train']
         features_test, labels_test = data['test'], data['labels_test']
-        print(labels_test)
 
         if printing:
             self.print_data_split(len(features_train), labels_test)
@@ -110,8 +117,17 @@ class Analysis:
 
         # if printing:
         #     self.plotMulticlassROC(3, labels_test, clf.decision_function(features_test))
+        print(self.checkDataset(features_train, features_test))
+        best_score = 0
+        if classifier == 'lin_svm' or classifier == 'knn':
+            best_score = clf.score
+        else:
+            best_score = clf.best_score_
 
-        return clf.best_score_, confusion_matrix(labels_test, pred)
+        print('Predicted values: {0}'.format(pred))
+        print('True lables: {0}'.format(labels_test))
+
+        return best_score, confusion_matrix(labels_test, pred)
 
     def plotDataWithPCA(self, data, mode='3D'):
         import matplotlib.pyplot as plt

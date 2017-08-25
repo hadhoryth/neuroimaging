@@ -42,10 +42,6 @@ class Features():
         return brain_regions
 
     def _removeOutlayers(self, upd_data):
-        # TODO check if it works without removal
-        scaler = MinMaxScaler()
-        upd_data = scaler.fit_transform(upd_data.reshape(-1, 1))
-
         def replaceOutlayers(values, idx, std, max, min):
             for i in idx:
                 if values[i] > max:
@@ -59,11 +55,6 @@ class Features():
         mask = np.ones(upd_data.shape, dtype=bool)
         mask[outlayers] = 0
         clean_max, clean_min = np.max(upd_data[mask]), np.min(upd_data[mask])
-
-        upd_data = replaceOutlayers(upd_data, outlayers, std / 3, clean_max, clean_min)
-        std = np.std(upd_data)
-        # if std < 0.1:
-        #     return None
         return upd_data
 
     def _inverseRepackFeatures(self, data):
@@ -122,10 +113,6 @@ class Features():
             norm = self._removeOutlayers(np.copy(brain_normal[region]))
             mci = self._removeOutlayers(np.copy(brain_mci[region]))
             ad = self._removeOutlayers(np.copy(brain_ad[region]))
-
-            if norm is None or (mci is None) or (ad is None):
-                num += 1
-                continue
 
             new_brain_normal[region], new_brain_mci[region], new_brain_ad[region] = norm, mci, ad
 
