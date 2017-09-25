@@ -1,7 +1,20 @@
-function nImagePath = normSUVR(suvImg, toNormilize, needShow)
-[data1, data2, h1, h2] = readImagesVols(suvImg, toNormilize);
-meanC = mean(data2(data1(:) > 0)) ;
-nImage = data2./meanC;
+function normilized_image_path = normSUVR(cerebellum, pet_image, white_matter,needShow)
+cerebellum = performCoregisterER({white_matter}, {cerebellum}, cell(1,1));
+cerebellum = cerebellum.rfiles{1}(1:end-2);
+
+cer_vols = readImageVols(cerebellum);
+[pet_vols, pet_header] = readImageVols(pet_image);
+[wm_vols, wm_header] = readImageVols(white_matter);
+
+
+mask = cer_vols;
+mask(mask > 0) = 1;
+wm_cerebellum = wm_vols .* mask;
+normilized_pet = pet_vols./mean(wm_cerebellum(:));
+% saveToNii(pet_header, normilized_wm, 'WM_')
+
+% meanC = mean(pet_vols(cer_vols(:) > 0)) ;
+% nImage = pet_vols./meanC;
 
 %   showMontage(data1);
 if needShow == 1
@@ -12,7 +25,9 @@ if needShow == 1
     title('SUVr image');
 end
 
-nImagePath = saveToNii(h2, nImage, 'SURV_');
+normilized_image_path = saveToNii(pet_header, normilized_pet, 'SUVR_');
+
+delete(cerebellum)
 
     function showMontage(image)
         %% normilize montage function cause in >> 1
@@ -24,13 +39,9 @@ nImagePath = saveToNii(h2, nImage, 'SURV_');
 
 end
 
-
-
-function [im, im1, header1, header2] = readImagesVols(a, b)
-header1 = spm_vol(a);
-header2 = spm_vol(b);
-
-im = spm_read_vols(header1);
-im1 = spm_read_vols(header2);
+function [vols, header] = readImageVols(image_path)
+    header = spm_vol(image_path);
+    vols = spm_read_vols(header);
 end
+
 

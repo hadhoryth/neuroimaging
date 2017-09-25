@@ -2,8 +2,9 @@ import numpy as np
 from Helper import Helpers
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from sklearn.preprocessing import StandardScaler, MinMaxScaler, MaxAbsScaler, RobustScaler
 import os.path
+from Logger import Log
 
 
 class Features():
@@ -38,7 +39,8 @@ class Features():
                     brain_regions[self.cerebellum_regions[j]] = np.append(
                         brain_regions[self.cerebellum_regions[j]], data[i][j])
                 else:
-                    brain_regions[self.cerebellum_regions[j]] = np.array(data[i][j])
+                    brain_regions[self.cerebellum_regions[j]
+                                  ] = np.array(data[i][j])
         return brain_regions
 
     def _removeOutlayers(self, upd_data):
@@ -57,7 +59,7 @@ class Features():
         clean_max, clean_min = np.max(upd_data[mask]), np.min(upd_data[mask])
         return upd_data
 
-    def _inverseRepackFeatures(self, data):
+    def _inverse_repack_features(self, data):
         """ data - dictionary """
         for value in data.values():
             if not 'out_data' in locals():
@@ -73,7 +75,8 @@ class Features():
     def _drawFeatureStat(self, title, subplot_size, sub_data, count):
         def drawSubplot(data, ax, clr='g', ttl='Title'):
             def updateAxes(ax, title, xlabel, ylabel, mean, std):
-                ax.set_title(title + ': ({0:0.2f}, '.format(mean) + '{0:0.2f})'.format(std))
+                ax.set_title(
+                    title + ': ({0:0.2f}, '.format(mean) + '{0:0.2f})'.format(std))
                 ax.set_xlabel(xlabel)
                 ax.set_ylabel(ylabel)
             mean, std = np.mean(data), np.std(data)
@@ -83,7 +86,8 @@ class Features():
             ax.plot((mean - 3 * std, mean - 3 * std), (0, 3))
             ax.plot((mean + 3 * std, mean + 3 * std), (0, 3))
             ax.plot((mean, mean), (0, 3))
-            updateAxes(ax, ttl, 'Frequency', 'Density function value', mean, std)
+            updateAxes(ax, ttl, 'Frequency',
+                       'Density function value', mean, std)
 
         rows, columns = subplot_size[0], subplot_size[1]
         f, axes = plt.subplots(rows, columns, figsize=(9, 7), sharex=True)
@@ -94,7 +98,8 @@ class Features():
         clr = ['g', 'm', 'b']
         for row in range(rows):
             for clm in range(columns):
-                drawSubplot(sub_data[k], axes[row, clm], clr[clm], patient_type[clm])
+                drawSubplot(sub_data[k], axes[row, clm],
+                            clr[clm], patient_type[clm])
                 k += 1
 
         plt.savefig(os.path.join('_features', str(count) + '_' + title))
@@ -102,31 +107,82 @@ class Features():
         plt.close()
         # plt.show()
 
-    def normalizeFeatures(self, brain_data, saveFeatures=False):
-        brain_normal = self._repackFeatures(brain_data['normal'])
-        brain_mci = self._repackFeatures(brain_data['mci'])
-        brain_ad = self._repackFeatures(brain_data['ad'])
+    def _save_plot(self, plot_data, title, count):
+        plt.suptitle(title, fontweight='bold')
+        sns.distplot(plot_data, color='g')
+        plt.xlabel('Frequency')
+        plt.ylabel('Density function value')
 
-        new_brain_normal, new_brain_mci, new_brain_ad = dict(), dict(), dict()
-        num = 1
+        plt.savefig(os.path.join('_features', str(count) + '_' + title))
+        plt.cla()
+        plt.close()
+
+    def normalize_features(self, brain_data, save_output=False):
+        features, labels = brain_data[0], brain_data[1]
+        all_regions = self._repackFeatures(features)
+        count = 1
+        new_regions = dict()
         for region in self.cerebellum_regions:
-            norm = self._removeOutlayers(np.copy(brain_normal[region]))
-            mci = self._removeOutlayers(np.copy(brain_mci[region]))
-            ad = self._removeOutlayers(np.copy(brain_ad[region]))
+            mean, std = np.mean(all_regions[region]), np.std(
+                all_regions[region])
+            # if std > 1:
+            if save_output:
+                self._save_plot(all_regions[region], region, count)
+            # count += 1
+            # continue
+            new_regions[region] = all_regions[region]
+            count += 1
 
-            new_brain_normal[region], new_brain_mci[region], new_brain_ad[region] = norm, mci, ad
+        return [self._inverse_repack_features(new_regions), labels]
 
-            if saveFeatures:
-                toDraw = [brain_normal[region], brain_mci[region],
-                          brain_ad[region], norm, mci, ad]
-                self._drawFeatureStat(region, (2, 3), toDraw, num)
-            num += 1
+    def scale_data(self, features, labels, scaler_type='minmax', save_output=False, logging=False):
+        scaler = MinMaxScaler()
+        if scaler_type.lower() == 'standard':
+            scaler = StandardScaler()
+        elif scaler_type.lower() == 'maxabs':
+            scaler = MaxAbsScaler()
+        elif scaler_type.lower() == 'robust':
+            scaler = RobustScaler()
 
-        brain_regions_norm = self._inverseRepackFeatures(new_brain_normal)
-        brain_regions_mci = self._inverseRepackFeatures(new_brain_mci)
-        brain_regions_ad = self._inverseRepackFeatures(new_brain_ad)
+        for i in range(len(features)):
+            scaled = scaler.fit_transform(features[i].reshape(-1, 1))
+            features[i] = scaled.reshape(1, -1)
+            if logging:
+                self._save_plot(scaled, 'Patient {0}'.format(i), i)
 
-        return {'normal': brain_regions_norm, 'mci': brain_regions_mci, 'ad': brain_regions_ad,
-                'labels_normal': np.zeros(len(brain_regions_norm)),
-                'labels_mci': np.zeros(len(brain_regions_mci)) + 1,
-                'labels_ad': np.zeros(len(brain_regions_ad)) + 2}
+        return {'features': features, 'labels': labels}
+
+    def resample_data(self, features, labels, r_type='enn'):
+        from imblearn.combine import SMOTEENN, SMOTETomek
+        sm = SMOTEENN()
+        if r_type == 'tomek':
+            sm = SMOTETomek()
+        return sm.fit_sample(features, labels)
+
+    def check_for_duplicates(self, data_a, data_b):
+        matched_elements = np.asarray([], dtype=int)
+        for i in range(len(data_a)):
+            for j in range(len(data_b)):
+                if i != j and np.array_equal(data_a[i], data_b[j]):
+                    matched_elements = np.append(matched_elements, i)
+                    break
+        if len(matched_elements) == 0:
+            Log.info('Array checker', 'No dublicates found......OK!')
+        else:
+            Log.warning('Array ckecker', 'Duplicates found, check dataset!!')
+        return matched_elements
+
+    def apply_pca(self, data, pca_components):
+        from sklearn.decomposition import PCA
+        pca = PCA(n_components=pca_components)
+        pca_data = pca.fit_transform(data)
+        Log.info('PCA', '{0} components selected'.format(pca_components))
+        return pca_data, pca
+
+    def apply_tsne(self, data, tsne_components):
+        from sklearn.manifold import TSNE
+        tsne = TSNE(n_components=tsne_components, learning_rate=600.0,
+                    random_state=23, perplexity=20.0)
+        tsne_data = tsne.fit_transform(data)
+        Log.info('TSNE', '{0} components selected'.format(tsne_components))
+        return tsne_data, tsne

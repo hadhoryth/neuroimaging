@@ -103,16 +103,17 @@ for j = 1 :length(petDate.year)
         w_files_norm = performNormalizationEW(mriDate.image{pet_mri}, mriDate.image{pet_mri});        
     end
     
-    [~, r] = isPreprocessed(mriDate.image{pet_mri}{1}, mriDate.image{pet_mri}{1}, 'c1w', 'wfiles');
+    [segmented_mri, r] = isPreprocessed(mriDate.image{pet_mri}{1}, mriDate.image{pet_mri}{1}, 'c1w', 'wfiles');
     if(r == 1)
-        performSegmentation(w_files_norm.wfiles);
+        segmented_mri = performSegmentation(w_files_norm.wfiles);
     end
     
     % Cerebellum processing
-    % Pet image has to be divided by SURv
-    [nCerImage, r] =  isPreprocessed(wr_files_norm.wfiles{1} , '', 'SURV_', 'files');
+    % Pet image has to be divided by SUVr
+    removeOldData(wr_files_norm.wfiles{1}, 'SU')
+    [nCerImage, r] = isPreprocessed(wr_files_norm.wfiles{1} , '', 'SUVR_', 'files');
     if(r == 1)
-        nCerImage = normSUVR(config_defaults.cerebellum, wr_files_norm.wfiles{1}, 0);
+        nCerImage = normSUVR(config_defaults.cerebellum, wr_files_norm.wfiles{1}, segmented_mri.wfiles{1}, 0);
     else
         nCerImage = char(nCerImage.files);
     end
@@ -124,7 +125,7 @@ for j = 1 :length(petDate.year)
         config_defaults.r_atlas = performReslise(w_files_norm.wrfiles{1}, config_defaults.atlas);
     end
     
-    % Extraction mean intensities from SURv image
+    % Extraction mean intensities from SUVr image
     brainRegions_pet = getRegionFromAtlas(config_defaults.r_atlas, nCerImage);
     saveFeatures(nCerImage, 'brainRegions_pet', output_dir_pet, 'dx_data');
     
@@ -244,6 +245,19 @@ end
                 a = mfullfile(char(a(end-2)),char(a(end)));
                 fprintf('\n%s - Corrupted, selecting next\n', a)
             end
+        end
+    end
+
+    function removeOldData(root, start_pattern)
+        root = fileparts(root);
+        fld = checkHiddenFolders({root});
+        fld = fld{1};
+        i = 1;
+        while i <= length(fld)
+            if(strcmp(fld{i}(1:length(start_pattern)), start_pattern))                
+                delete(mfullfile(root, fld{i}))                
+            end
+            i = i + 1;
         end
     end
 

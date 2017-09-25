@@ -4,7 +4,9 @@ ADNI_Rearanged
 dataset
 /Matlab_scripts/spm12
 /ADNI_mat
-/Python_scripts/.vscode
+.vscode
 /Python_scripts/test_script.py
 .pyc
 /Python_scripts/_features
+/Python_scripts/xgboost
+/Python_scripts/__pycache__

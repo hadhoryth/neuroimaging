@@ -6,6 +6,7 @@ from os import listdir, path
 import scipy.io as sio
 import pickle
 import os.path
+from Logger import Log
 
 
 class Helpers:
@@ -27,7 +28,8 @@ class Helpers:
                 female_mmse.append(checkMMSE(patient['mmse']))
 
         male_age, male_mmse = np.asarray(male_age), np.asarray(male_mmse)
-        female_age, female_mmse = np.asarray(female_age), np.asarray(female_mmse)
+        female_age, female_mmse = np.asarray(
+            female_age), np.asarray(female_mmse)
 
         stat = {'total': len(patients_data),
                 'av_male': np.mean(male_age), 'std_male': np.std(male_age), 'av_male_mmse': np.mean(male_mmse),
@@ -95,14 +97,18 @@ class Helpers:
                                self.features_Normal_AV45_DX, dx_data)
         elif patient == 'mci':
             if modality == 'fdg':
-                updateVaribale(self.features_MCI_FDG, features, self.features_MCI_FDG_DX, dx_data)
+                updateVaribale(self.features_MCI_FDG, features,
+                               self.features_MCI_FDG_DX, dx_data)
             else:
-                updateVaribale(self.features_MCI_AV45, features, self.features_MCI_AV45_DX, dx_data)
+                updateVaribale(self.features_MCI_AV45, features,
+                               self.features_MCI_AV45_DX, dx_data)
         elif patient == 'ad':
             if modality == 'fdg':
-                updateVaribale(self.features_AD_FDG, features, self.features_AD_FDG_DX, dx_data)
+                updateVaribale(self.features_AD_FDG, features,
+                               self.features_AD_FDG_DX, dx_data)
             else:
-                updateVaribale(self.features_AD_AV45, features, self.features_AD_AV45_DX, dx_data)
+                updateVaribale(self.features_AD_AV45, features,
+                               self.features_AD_AV45_DX, dx_data)
 
     def packFeatures(self, keys):
         def formatFeatures(data, data1, gl_keys, in_keys):
@@ -113,22 +119,26 @@ class Helpers:
                 for key in range(step):
                     if gl_key != gl_keys[-1]:
                         out_dict[gl_key].update({keys[key]: data[key]})
-                        out_dict[gl_key].update({keys[key + step]: np.zeros(len(data[key])) + key})
+                        out_dict[gl_key].update(
+                            {keys[key + step]: np.zeros(len(data[key])) + key})
                     else:
                         out_dict[gl_key].update({keys[key]: data1[key]})
 
             return out_dict
 
-        av45 = [self.features_Normal_AV45, self.features_MCI_AV45, self.features_AD_AV45]
+        av45 = [self.features_Normal_AV45,
+                self.features_MCI_AV45, self.features_AD_AV45]
         av45_dx = [self.features_Normal_AV45_DX,
                    self.features_MCI_AV45_DX, self.features_AD_AV45_DX]
 
-        fdg = [self.features_Normal_FDG, self.features_MCI_FDG, self.features_AD_FDG]
-        fdg_dx = [self.features_Normal_FDG_DX, self.features_MCI_FDG_DX, self.features_AD_FDG_DX]
+        fdg = [self.features_Normal_FDG,
+               self.features_MCI_FDG, self.features_AD_FDG]
+        fdg_dx = [self.features_Normal_FDG_DX,
+                  self.features_MCI_FDG_DX, self.features_AD_FDG_DX]
 
         return formatFeatures(av45, av45_dx, ['av45', 'dx'], keys), formatFeatures(fdg, fdg_dx, ['fdg', 'dx'], keys)
 
-    def extractFearutes(self, root_directory, keys):
+    def _extract_fearutes(self, root_directory, keys):
         # Getting folders with features: Normal, MCI, AD
         self.initContainers()
         root_contents = self.getFolderContents(root_directory)
@@ -140,28 +150,38 @@ class Helpers:
                 patients_path = path.join(modalities_path, mod)
                 patients_contents = self.getFolderContents(patients_path)
                 for patient in patients_contents:
-                    mat_contents = sio.loadmat(path.join(patients_path, patient))
+                    mat_contents = sio.loadmat(
+                        path.join(patients_path, patient))
                     features = mat_contents[load_var][0]
                     dx_data = self.convertToDict(mat_contents['dx_data'][0])
 
                     self.updateFeatures(fld, mod.lower(), features, dx_data)
         return self.packFeatures(keys)
 
-    def saveReadToLocal(self, mode, name, what, path, force=False):
-        filename = os.path.join(path, name + '.pickle')
-        if mode == 'write' and (not os.path.isfile(filename) and not force):
-            with open(filename, 'wb') as file_bytes:
-                pickle.dump(what, file_bytes)
-        elif mode == 'read':
-            with open(filename, 'rb') as file_bytes:
-                load = pickle.load(file_bytes)
-                return load
-
-    def cacheExist(self, name, path):
-        filename = os.path.join(path, name + '.pickle')
-        if os.path.isfile(filename):
+    def dump_to_local(self, file_path, var):
+        with open(file_path, 'wb') as file_bytes:
+            pickle.dump(var, file_bytes)
             return True
-        return False
+
+    def read_from_local(self, file_path):
+        with open(file_path, 'rb') as file_bytes:
+            load = pickle.load(file_bytes)
+            return load
+
+    def get_features(self, root_info, name, cache_dir='_cache', logging=False):
+        filename = os.path.join(cache_dir, name + '.pickle')
+        if os.path.isfile(filename):
+            if logging:
+                Log.info('dump', 'Reading from {0}'.format(filename))
+            return self.read_from_local(filename)
+        info = self._extract_fearutes(
+            root_info['mat_home'], root_info['keys'])
+        if not os.path.isdir(cache_dir):
+            os.mkdir(cache_dir)
+        self.dump_to_local(filename, info)
+        if logging:
+            Log.info('dump', 'Data cached path {0}'.format(filename))
+        return info
 
     def fancy_plot_confusion_matrix(self, cm, classes, title='Confusion matrix', cmap=plt.cm.Blues, plot=False):
 
