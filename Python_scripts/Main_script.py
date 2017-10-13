@@ -18,8 +18,8 @@ def run_analysis(data, keys, classifier='svm', scaler='minmax', printing=False,
         normilized['features'], pca = ft.apply_pca(
             normilized['features'], pca_comp)
 
-    acurracies, model_params = anls.train_model(classifier, normilized['features'],
-                                                normilized['labels'], logging=printing)
+    acurracies, model_params, _, _ = anls.train_model(classifier, normilized['features'],
+                                                      normilized['labels'], logging=printing)
 
     print('-----------Validating------------------')
     normilized_test = ft.scale_data(
@@ -29,8 +29,15 @@ def run_analysis(data, keys, classifier='svm', scaler='minmax', printing=False,
     if pca_comp is not None:
         normilized_test['features'] = pca.transform(normilized_test['features'])
 
-    acurracies, model_params = anls.train_model(
+    acurracies, model_params, prec, rec = anls.train_model(
         classifier, normilized_test['features'], normilized_test['labels'], params=model_params, logging=printing)
+
+    import numpy as np
+    print('--------------------------------------------')
+    print('Presions :', prec)
+    print('Recalls: ', rec)
+    print('Average precision: ', np.mean(prec))
+    print('Average recalls: ', np.mean(rec))
 
 
 if __name__ == '__main__':
@@ -43,7 +50,7 @@ if __name__ == '__main__':
 
     # for i in range(40, 100):
     run_analysis(av45_data['av45'], info['keys'],
-                 printing=print_logs, resampling=False, scaler='robust', pca_comp=90)
+                 printing=print_logs, resampling=False, scaler='robust')
     # run_analysis(av45_data['av45'], info['keys'],
     #              printing=print_logs, resampling=True, scaler='robust',
     #              apply_pca=True, pca_comp=i)

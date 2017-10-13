@@ -10,3 +10,4 @@ dataset
 /Python_scripts/_features
 /Python_scripts/xgboost
 /Python_scripts/__pycache__
+/Python_scripts/Brain_simulation_GA

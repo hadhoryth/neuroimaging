@@ -27,7 +27,7 @@ class Analysis:
             tuned_param = {'C': [0.1, 10, 10, 50, 100],
                            'gamma': [0.001, 0.01, 0.1, 0.2]}
             clf = GridSearchCV(SVC(kernel='rbf', decision_function_shape='ovr',
-                                   random_state=0), tuned_param, cv=5)
+                                   random_state=0, probability=True), tuned_param, cv=5)
         elif type.lower() == 'lin_svm':
             Log.info('Model info', 'Linear Support Vector machine has been selected')
             clf = OneVsRestClassifier(LinearSVC(random_state=0, C=5))
@@ -81,13 +81,14 @@ class Analysis:
         else:
             if clf_type == 'svm':
                 clf = SVC(C=params['C'], gamma=params['Gamma'],
-                          kernel='rbf', decision_function_shape='ovr')
+                          kernel='rbf', decision_function_shape='ovr', probability=True)
             elif clf_type == 'lgr':
                 clf = LogisticRegression(C=params['C'], solver='newton-cg')
 
-        _C, _Gamma, _Scores, _Accuracies = np.array(
-            []), np.array([]), np.array([]), np.array([])
+        _C, _Gamma, _Scores, _Accuracies, _Precisions, _Recalls = np.array(
+            []), np.array([]), np.array([]), np.array([]), np.array([]), np.array([])
         selected_params = dict()
+        _Probabilities, _Indicies, _True_Labels = list(), list(), list()
         for train_idx, test_idx in skf.split(features, labels):
             # if clf_type == 'xgb':
             #     if logging:
@@ -106,8 +107,16 @@ class Analysis:
                 _Scores = np.append(_Scores, clf.best_score_)
             else:
                 predictions = clf.predict(features[test_idx])
+                _Probabilities.append(clf.predict_proba(features[test_idx]))
+                _Indicies.append(test_idx)
+                _True_Labels.append(labels[test_idx])
                 _Accuracies = np.append(_Accuracies, accuracy_score(
                     predictions, labels[test_idx]))
+                from sklearn.metrics import precision_score, recall_score
+                _Precisions = np.append(_Precisions, precision_score(
+                    predictions, labels[test_idx], average='macro'))
+                _Recalls = np.append(_Precisions, recall_score(
+                    predictions, labels[test_idx], average='macro'))
                 print('Accuracy score: ', accuracy_score(
                     predictions, labels[test_idx]))
 
@@ -117,4 +126,4 @@ class Analysis:
             selected_params = {'C': np.dot(np.mean(_C), np.mean(
                 _Scores).T), 'Gamma': np.dot(np.mean(_Gamma), np.mean(_Scores).T)}
 
-        return _Accuracies, selected_params
+        return _Accuracies, selected_params, _Precisions, _Recalls

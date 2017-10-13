@@ -5,8 +5,6 @@ import numpy as np
 from Helper import Helpers
 from data_learn import Analysis
 import math
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
 from features_learn import Features
 
 
@@ -35,9 +33,10 @@ class NeuralNetwork:
             regularizers += tf.nn.l2_loss(self.parameters['W' + str(l)])
         return regularizers
 
-    def _one_hot_matrix(self, labels, C):
+    def _convert_to_hot_matrix(self, labels, C):
         C = tf.constant(C, name='C')
-        return tf.one_hot(labels, C, axis=0)
+        with tf.Session() as sess:
+            return sess.run(tf.one_hot(labels, C, axis=0))
 
     def _forward_propagation(self, X, dropout=False):
         A = X
@@ -91,29 +90,30 @@ class NeuralNetwork:
             logits=logits, labels=labels))
         return cost
 
-    def model(self, X_train, Y_train, X_test, Y_test, X_valid, Y_valid, learning_rate=0.001,
-              num_epochs=1500, minibatch_size=32, print_cost=True, reg_beta=None):
+    def model(self, X_train, Y_train, learning_rate=0.001,
+              num_epochs=1500, minibatch_size=32, print_cost=True, reg_beta=None, use_cache=False):
 
         ops.reset_default_graph()
         tf.set_random_seed(1)
-        (n_x, m) = X_train.shape
-        Y_train = self._one_hot_matrix(Y_train, 3)  # tensor
-        Y_test = self._one_hot_matrix(Y_test, 3)
-        Y_valid = self._one_hot_matrix(Y_valid, 3)
-        n_y = Y_train.shape[0].value
-        costs = []
-
-        X, Y = self._create_placeholders(n_x, n_y)
         self._initialize_parameters()
+        cache_path = '_cache/model_params.pickle'
+        if use_cache:
+            h = Helpers()
+            import os.path
+            if os.path.isfile(cache_path):
+                return h.read_from_local(cache_path)
+
+        (n_x, m) = X_train.shape
+        Y_train = self._convert_to_hot_matrix(Y_train, 3)
+        n_y = Y_train.shape[0]
+        costs = []
+        X, Y = self._create_placeholders(n_x, n_y)
+
         ZL = self._forward_propagation(X)
         cost = self._compute_cost(ZL, Y)
 
         if reg_beta is not None:
             cost = tf.reduce_mean(cost + reg_beta * self._regularize())
-
-        # global_step = tf.Variable(0)
-        # learning_rate = tf.train.exponential_decay(
-        #     learning_rate, global_step, 100000, 0.96, staircase=True)
 
         optimizer = tf.train.AdamOptimizer(
             learning_rate=learning_rate).minimize(cost)
@@ -122,9 +122,6 @@ class NeuralNetwork:
         seed = 0
         with tf.Session() as session:
             session.run(init)
-            Y_train, Y_test, Y_valid = session.run(
-                Y_train), session.run(Y_test), session.run(Y_valid)
-
             for epoch in range(num_epochs):
                 epoch_cost = 0.
                 global_step = epoch_cost
@@ -138,34 +135,15 @@ class NeuralNetwork:
                         X: minibatch_X, Y: minibatch_Y})
                     epoch_cost += minibatch_cost / num_minibatches
 
-                if print_cost == True and epoch % 100 == 0:
+                if print_cost and epoch % 100 == 0:
                     Log.info('Neural Network', 'Cost after epoch %i: %f' %
                              (epoch, epoch_cost))
-                if print_cost == True and epoch % 5 == 0:
+                if print_cost and epoch % 5 == 0:
                     costs.append(epoch_cost)
-
-            # plot the cost
-            # plt.plot(np.squeeze(costs))
-            # plt.ylabel('cost')
-            # plt.xlabel('iterations (per tens)')
-            # plt.title("Learning rate =" + str(learning_rate))
-
-            # lets save the parameters in a variable
-            parameters = session.run(self.parameters)
-            ZL = self._forward_propagation(X)
-            correct_prediction = tf.equal(tf.argmax(ZL), tf.argmax(Y))
-
-            # Calculate accuracy on the test set
-            accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
-
-            Log.info(
-                "Evaluation", 'Train - {0}'.format(accuracy.eval({X: X_train, Y: Y_train})))
-            test_acc = accuracy.eval({X: X_test, Y: Y_test})
-            Log.info("TEvaluation", 'Test - {0}'.format(test_acc))
-            Log.info('Evaluation', 'Validation - %f' %
-                     (accuracy.eval({X: X_valid, Y: Y_valid})))
-            return test_acc, parameters
-            # plt.show()
+            model_parameters = session.run(self.parameters)
+            if use_cache:
+                h.dump_to_local(cache_path, model_parameters)
+            return model_parameters
 
     def predict(self, X_test, Y_test, params):
         def covert_to_tensors(weigths):
@@ -180,12 +158,31 @@ class NeuralNetwork:
         Y = tf.placeholder(tf.float32, name='Y')
         ZL = self._forward_propagation(features)
         p = tf.argmax(ZL)
+
         with tf.Session() as sess:
             prediction = sess.run(p, feed_dict={features: X_test})
             correct_prediction = tf.equal(prediction, tf.argmax(Y))
             accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
-            acc = accuracy.eval({Y: Y_test})
-        return acc
+            acc = accuracy.eval({Y: self._convert_to_hot_matrix(Y_test, 3)})
+            cm = sess.run(tf.confusion_matrix(
+                np.asarray(Y_test, dtype='int'), prediction, 3))
+            f_score = self._get_precision_reall(np.asarray(
+                Y_test, dtype='int'), prediction)
+            return acc, cm, f_score
+
+    def _get_precision_reall(self, true_labels, predicted):
+        from sklearn.metrics import precision_score, recall_score, f1_score
+        precision = precision_score(
+            predicted, true_labels, average='macro')
+        recall = recall_score(
+            predicted, true_labels, average='macro')
+
+        f_score = f1_score(true_labels, predicted, average='macro')
+
+        Log.info('Validation', 'Precision {0}'.format(precision))
+        Log.info('Validation', 'Recall {0}'.format(recall))
+        Log.info('Validation', 'F1 score {0}'.format(f_score))
+        return f_score
 
 
 def get_test_sets(anls, data):
@@ -201,7 +198,7 @@ def get_test_sets(anls, data):
 
 
 if __name__ == '__main__':
-    helper = Helpers()
+    helper, ft = Helpers(), Features()
     av45, fdg = helper.read_from_local(
         '/Users/XT/Documents/PhD/Granada/neuroimaging/Python_scripts/_cache/_all_data.pickle')
     keys = ['normal', 'mci', 'ad', 'labels_normal', 'labels_mci', 'labels_ad']
@@ -209,7 +206,15 @@ if __name__ == '__main__':
     av45 = av45['av45']
     anls = Analysis()
     mixed_av45 = anls.mix_data(av45, keys, test=0.1, logging=True)
-    mixed_fdg = anls.mix_data(fdg['fdg'], keys, test=0, logging=True)
+    mixed_fdg = anls.mix_data(fdg['fdg'], keys, test=0.1, logging=True)
+
+    gl_mixing = Helpers.concat_dicts(mixed_av45['test'], mixed_fdg['test'])
+
+    # ft = Features()
+    # mixed_av45['test'] = ft.resample_data(
+    #     mixed_av45['test']['features'], mixed_av45['test']['labels'])
+    # mixed_av45['test'] = {'features': mixed_av45['test']
+    #                       [0], 'labels': mixed_av45['test'][1]}
 
     dev_set, validation_set = get_test_sets(anls, mixed_av45['test'])
 
@@ -219,19 +224,27 @@ if __name__ == '__main__':
     mixed_av45['train']['labels'] = np.append(
         mixed_av45['train']['labels'], mixed_fdg['train']['labels'])
 
-    # ft = Features()
-    # mixed_av45 = ft.resample_data(
-    #     mixed_av45['train']['features'], mixed_av45['train']['labels'], r_type='tomek')
+    duplicates_dev = ft.check_for_duplicates(
+        mixed_av45['train']['features'], dev_set['features'], 'Dev: ')
+    duplicates_valid = ft.check_for_duplicates(
+        mixed_av45['train']['features'], validation_set['features'], 'Validation: ')
 
     # Training the model
     nn = NeuralNetwork([116, 116, 70, 60, 50, 20, 3])
-    reg_betas = np.linspace(0.002, 0.003, 20)
-    # reg_betas = [0.00278947368421]
+    # reg_betas = np.linspace(0.002, 0.003, 20)
+    reg_betas = [0.00278947368421]
     acc = []
     for i in range(len(reg_betas)):
         Log.info('Regularization param', reg_betas[i])
-        a, params = nn.model(mixed_av45['train']['features'].T, mixed_av45['train']['labels'],
-                             dev_set['features'].T, dev_set['labels'], validation_set['features'].T, validation_set['labels'], learning_rate=0.001, reg_beta=reg_betas[i])
-        acc.append(a)
-    # Log.info('Validation accuracy', nn.predict(
-    #     validation_set['features'].T, validation_set['labels'], params))
+        weigths = nn.model(mixed_av45['train']['features'].T, mixed_av45['train']['labels'],
+                           learning_rate=0.001, reg_beta=reg_betas[i], use_cache=True)
+
+    dev_acc, dev_cm, _ = nn.predict(
+        dev_set['features'].T, dev_set['labels'], weigths)
+    Log.info('Validation', 'Test {0}'.format(dev_acc))
+    Log.info('Validation', 'Confusion matrix (dev) \n{0}'.format(dev_cm))
+
+    valid_acc, valid_cm, _ = nn.predict(
+        validation_set['features'].T, validation_set['labels'], weigths)
+    Log.info('Validation', 'Validation {0}'.format(valid_acc))
+    Log.info('Validation', 'Confusion matrix (valid) \n{0}'.format(valid_cm))

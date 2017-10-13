@@ -159,7 +159,7 @@ class Features():
             sm = SMOTETomek()
         return sm.fit_sample(features, labels)
 
-    def check_for_duplicates(self, data_a, data_b):
+    def check_for_duplicates(self, data_a, data_b, label=''):
         matched_elements = np.asarray([], dtype=int)
         for i in range(len(data_a)):
             for j in range(len(data_b)):
@@ -167,9 +167,10 @@ class Features():
                     matched_elements = np.append(matched_elements, i)
                     break
         if len(matched_elements) == 0:
-            Log.info('Array checker', 'No dublicates found......OK!')
+            Log.info('Array checker', label + 'No dublicates found......OK!')
         else:
-            Log.warning('Array ckecker', 'Duplicates found, check dataset!!')
+            Log.warning('Array ckecker', label +
+                        'Duplicates found, check dataset!!')
         return matched_elements
 
     def apply_pca(self, data, pca_components):

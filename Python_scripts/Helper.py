@@ -1,11 +1,13 @@
-from matplotlib import pyplot as plt
 import itertools
+import os.path
+import pickle
+from os import listdir, path
+
 import numpy as np
 import pandas as pd
-from os import listdir, path
 import scipy.io as sio
-import pickle
-import os.path
+from matplotlib import pyplot as plt
+
 from Logger import Log
 
 
@@ -161,12 +163,10 @@ class Helpers:
     def dump_to_local(self, file_path, var):
         with open(file_path, 'wb') as file_bytes:
             pickle.dump(var, file_bytes)
-            return True
 
     def read_from_local(self, file_path):
         with open(file_path, 'rb') as file_bytes:
-            load = pickle.load(file_bytes)
-            return load
+            return pickle.load(file_bytes)
 
     def get_features(self, root_info, name, cache_dir='_cache', logging=False):
         filename = os.path.join(cache_dir, name + '.pickle')
@@ -179,8 +179,7 @@ class Helpers:
         if not os.path.isdir(cache_dir):
             os.mkdir(cache_dir)
         self.dump_to_local(filename, info)
-        if logging:
-            Log.info('dump', 'Data cached path {0}'.format(filename))
+
         return info
 
     def fancy_plot_confusion_matrix(self, cm, classes, title='Confusion matrix', cmap=plt.cm.Blues, plot=False):
@@ -209,3 +208,16 @@ class Helpers:
             plt.ylabel('True label')
             plt.xlabel('Predicted label')
             plt.show()
+
+    @classmethod
+    def concat_dicts(self, dict1, dict2):
+        """
+            Dictionary keys must be the same
+        """
+        result = dict()
+        for key, value in dict1.items():
+            if len(value.shape) == 1:
+                result[key] = np.concatenate([value, dict2[key]])
+            else:
+                result[key] = np.vstack([value, dict2[key]])
+        return result
