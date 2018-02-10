@@ -164,7 +164,8 @@ class Helpers:
         with open(file_path, 'wb') as file_bytes:
             pickle.dump(var, file_bytes)
 
-    def read_from_local(self, file_path):
+    @staticmethod
+    def read_from_local(file_path):
         with open(file_path, 'rb') as file_bytes:
             return pickle.load(file_bytes)
 

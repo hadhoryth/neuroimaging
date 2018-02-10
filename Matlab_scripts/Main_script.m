@@ -55,5 +55,5 @@ spm_defaults.segment.tissue = struct('tpm',tmp, 'ngaus',ngaus, 'native', native,
 
 
 home_out = '/Volumes/ELEMENT/Alzheimer';
-scanAndLogMissing('/Volumes/ELEMENT/Alzheimer/ADNI_Rearranged', dx_labels);
-% rearrangePreFolders('/Volumes/ELEMENT/Alzheimer/ADNI_Rearranged', dx_labels);
+% scanAndLogMissing('/Volumes/ELEMENT/Alzheimer/ADNI_Rearranged', dx_labels);
+rearrangePreFolders('/Volumes/ELEMENT/Alzheimer/ADNI_Rearranged', dx_labels);

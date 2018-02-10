@@ -173,7 +173,8 @@ class Features():
                         'Duplicates found, check dataset!!')
         return matched_elements
 
-    def apply_pca(self, data, pca_components):
+    @staticmethod
+    def apply_pca(data, pca_components):
         from sklearn.decomposition import PCA
         pca = PCA(n_components=pca_components)
         pca_data = pca.fit_transform(data)

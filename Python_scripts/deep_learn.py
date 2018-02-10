@@ -45,8 +45,8 @@ class NeuralNetwork:
             Z = tf.add(
                 tf.matmul(self.parameters['W' + str(l)], A), self.parameters['b' + str(l)])
             A = tf.nn.relu(Z)
-            if dropout:
-                A = tf.nn.dropout(A, 0.2)
+            if dropout and l != L - 2:
+                A = tf.nn.dropout(A, 0.1)
         ZL = tf.add(
             tf.matmul(self.parameters['W' + str(L - 1)], A), self.parameters['b' + str(L - 1)])
         return ZL
@@ -91,17 +91,17 @@ class NeuralNetwork:
         return cost
 
     def model(self, X_train, Y_train, learning_rate=0.001,
-              num_epochs=1500, minibatch_size=32, print_cost=True, reg_beta=None, use_cache=False):
+              num_epochs=1500, minibatch_size=32, print_cost=True, reg_beta=None, use_cache=False, dropout=False):
 
         ops.reset_default_graph()
         tf.set_random_seed(1)
         self._initialize_parameters()
         cache_path = '_cache/model_params.pickle'
-        if use_cache:
-            h = Helpers()
-            import os.path
-            if os.path.isfile(cache_path):
-                return h.read_from_local(cache_path)
+        # if use_cache:
+        #     h = Helpers()
+        #     import os.path
+        #     if os.path.isfile(cache_path):
+        #         return h.read_from_local(cache_path)
 
         (n_x, m) = X_train.shape
         Y_train = self._convert_to_hot_matrix(Y_train, 3)
@@ -109,7 +109,7 @@ class NeuralNetwork:
         costs = []
         X, Y = self._create_placeholders(n_x, n_y)
 
-        ZL = self._forward_propagation(X)
+        ZL = self._forward_propagation(X, dropout)
         cost = self._compute_cost(ZL, Y)
 
         if reg_beta is not None:
@@ -208,7 +208,7 @@ if __name__ == '__main__':
     mixed_av45 = anls.mix_data(av45, keys, test=0.1, logging=True)
     mixed_fdg = anls.mix_data(fdg['fdg'], keys, test=0.1, logging=True)
 
-    gl_mixing = Helpers.concat_dicts(mixed_av45['test'], mixed_fdg['test'])
+    gl_testset = Helpers.concat_dicts(mixed_av45['test'], mixed_fdg['test'])
 
     # ft = Features()
     # mixed_av45['test'] = ft.resample_data(
@@ -216,7 +216,7 @@ if __name__ == '__main__':
     # mixed_av45['test'] = {'features': mixed_av45['test']
     #                       [0], 'labels': mixed_av45['test'][1]}
 
-    dev_set, validation_set = get_test_sets(anls, mixed_av45['test'])
+    dev_set, validation_set = get_test_sets(anls, gl_testset)
 
     # Mix FDG and AV45 data
     mixed_av45['train']['features'] = np.vstack(
@@ -230,19 +230,21 @@ if __name__ == '__main__':
         mixed_av45['train']['features'], validation_set['features'], 'Validation: ')
 
     # Training the model
-    nn = NeuralNetwork([116, 116, 70, 60, 50, 20, 3])
-    # reg_betas = np.linspace(0.002, 0.003, 20)
-    reg_betas = [0.00278947368421]
+    nn = NeuralNetwork([116, 116, 100, 60, 50, 20, 3])
+    # reg_betas = np.linspace(0.0026, 0.0028, 30)
+    # reg_betas = [0.00264827586207, 0.00266206896552,
+    #              0.00273793103448, 0.00277931034483, 0.00278620689655, 0.0028]
+    reg_betas = [0.00266206896552]
     acc = []
     for i in range(len(reg_betas)):
         Log.info('Regularization param', reg_betas[i])
         weigths = nn.model(mixed_av45['train']['features'].T, mixed_av45['train']['labels'],
-                           learning_rate=0.001, reg_beta=reg_betas[i], use_cache=True)
+                           learning_rate=0.001, reg_beta=reg_betas[i], use_cache=True, dropout=False)
 
-    dev_acc, dev_cm, _ = nn.predict(
-        dev_set['features'].T, dev_set['labels'], weigths)
-    Log.info('Validation', 'Test {0}'.format(dev_acc))
-    Log.info('Validation', 'Confusion matrix (dev) \n{0}'.format(dev_cm))
+        dev_acc, dev_cm, _ = nn.predict(
+            dev_set['features'].T, dev_set['labels'], weigths)
+        Log.info('Validation', 'Test {0}'.format(dev_acc))
+        Log.info('Validation', 'Confusion matrix (dev) \n{0}'.format(dev_cm))
 
     valid_acc, valid_cm, _ = nn.predict(
         validation_set['features'].T, validation_set['labels'], weigths)
