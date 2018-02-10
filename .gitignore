@@ -11,6 +11,8 @@ dataset
 /Python_scripts/__pycache__
 /Python_scripts/Brain_simulation_GA
 /Python_scripts/CNN/dataset
-/Python_scripts/back_up
+/Python_scripts/CNN/back_up/
 Atlas
 csv_dataset
+/Python_scripts/_cache
+/Python_scripts/_cache_copy
