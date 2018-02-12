@@ -17,3 +17,4 @@ csv_dataset
 /Python_scripts/_cache
 /Python_scripts/_cache_copy
 /Python_scripts/CNN/FTP
+/Python_scripts/CNN/__pycache__
